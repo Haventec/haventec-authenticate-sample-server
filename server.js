@@ -4,10 +4,11 @@ const Hapi = require('hapi');
 const server = new Hapi.Server();
 
 var haventecServerURL = 'https://api.haventec.com/authenticate';
-var yourApiKey = 'your secret API key';
-var yourApplicationId = 'your applicationId API key';
-var serverPort = 3000;
-var serverHost = 'localhost';
+
+var yourApiKey = process.argv[2];
+var yourApplicationId = process.argv[3];
+var serverPort = process.argv[4];
+var serverHost = process.argv[5];
 
 var globalHeaders = {
     'Content-Type': 'application/json',

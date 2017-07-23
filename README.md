@@ -22,8 +22,18 @@ npm install
 
 Start the server
 ```
-npm start
+npm start apiKey applicationId port host
 ```
+
+Parameters:
+
+apiKey - This is your Haventec API key that is provided by [Haventec Cloud Portal](https://cloudportal.haventec.com)
+
+applicationId - This is your Haventec Application ID that is provided by [Haventec Cloud Portal](https://cloudportal.haventec.com)
+
+port - The port this server is to use, e.g 3000
+
+host - The host this server is to use, e.g localhost
 
 ## Built With
 
@@ -32,7 +42,7 @@ npm start
 
 ## Authors
 
-* [Haventec](https://haventec.com)
+* [Haventec](http://www.haventec.com/)
 
 ## License
 
