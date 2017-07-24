@@ -2,21 +2,61 @@
 
 const Hapi = require('hapi');
 const server = new Hapi.Server();
+const nodemailer = require('nodemailer');
 
-var haventecServerURL = 'https://api.haventec.com/authenticate';
+let haventecServerURL = '';
+//var haventecServerURL = 'https://api.haventec.com/authenticate';
 
-var yourApiKey = process.argv[2];
-var yourApplicationId = process.argv[3];
-var serverPort = process.argv[4];
-var serverHost = process.argv[5];
+let yourApiKey = process.argv[2];
+let serverHost = process.argv[3];
+let serverPort = process.argv[4];
+let mailServerHost = process.argv[5];
+let mailServerPort = process.argv[6];
+let mailServerSecure = process.argv[7];
+let mailServerUsername = process.argv[8];
+let mailServerPassword = process.argv[9];
 
-var globalHeaders = {
+let globalHeaders = {
     'Content-Type': 'application/json',
-    'X-API-Key': yourApiKey,
-    'X-Application-ID': yourApplicationId
+    'X-API-Key': yourApiKey
 };
 
-server.connection({ port: serverPort, host: serverHost });
+/******************************
+ *
+ * Mail server config
+ *
+ ******************************/
+let transporter = nodemailer.createTransport({
+    host: mailServerHost,
+    port: mailServerPort,
+    secure: (mailServerSecure === 'true'),
+    auth: {
+        user: mailServerUsername,
+        pass: mailServerPassword
+    }
+});
+
+let mailOptions = {
+    from: '"Haventec" <no-reply@haventec.com.com>',
+    to: 'john.kelleher@haventec.com',
+    subject: 'Hello',
+    text: 'Hello world ?',
+    html: '<b>Hello world ?</b>'
+};
+
+// transporter.sendMail(mailOptions, (error, info) => {
+//     if (error) {
+//         return console.log(error);
+//     }
+//     console.log('Message %s sent: %s', info.messageId, info.response);
+// });
+
+/******************************
+ *
+ * Web server config
+ *
+ ******************************/
+server.connection({ port: serverPort, host: serverHost, routes: { cors: true }  });
 
 server.route({
     method: 'GET',
@@ -33,6 +73,140 @@ server.register({
     if (err) {
         console.log('Failed to load h2o2');
     }
+
+    // Returns a registration token for a self-service created user
+    server.route({
+        method: 'POST',
+        path: '/self-service/user',
+        handler: function (request, reply) {
+            console.info('Called POST /self-service/user');
+
+            var  body = {
+                "responseStatus":{
+                    "message":"",
+                    "code":"",
+                    "status":"SUCCESS"
+                }
+            };
+
+            reply(body);
+        }
+    });
+
+    // Registers the user and returns their new authentication keys and JWT
+    server.route({
+        method: 'POST',
+        path: '/register/user',
+        handler: function (request, reply) {
+            console.info('Called POST /register/user');
+
+            var  body = {
+                "accessToken":{
+                    "token":"",
+                    "type":""
+                },
+                "applicationUuid":"",
+                "authKey":"",
+                "deviceUuid":"",
+                "userUuid":"",
+                "responseStatus":{
+                    "message":"",
+                    "code":"",
+                    "status":"SUCCESS"
+                }
+            };
+
+            reply(body);
+        }
+    });
+
+    // Logs the user in and returns a new set of authentication keys and JWT
+    server.route({
+        method: 'POST',
+        path: '/login',
+        handler: function (request, reply) {
+            console.info('Called POST /login');
+
+            var  body = {
+                "accessToken": {
+                    "token": "string",
+                    "type": "string"
+                },
+                "authKey": "string",
+                "responseStatus":{
+                    "message":"",
+                    "code":"",
+                    "status":"SUCCESS"
+                }
+            };
+
+            reply(body);
+        }
+    });
+
+    // Logs the user out and invalidates their JWT
+    server.route({
+        method: 'DELETE',
+        path: '/logout',
+        handler: function (request, reply) {
+            console.info('Called DELETE /logout');
+
+            var  body = {
+                "responseStatus":{
+                    "message":"",
+                    "code":"",
+                    "status":"SUCCESS"
+                }
+            };
+
+            reply(body);
+        }
+    });
+
+    // Calls forgot pin for a given user and returns a reset token
+    server.route({
+        method: 'POST',
+        path: '/forgot-pin',
+        handler: function (request, reply) {
+            console.info('Called POST /forgot-pin');
+
+            var  body = {
+                "resetToken":"",
+                "responseStatus":{
+                    "message":"",
+                    "code":"",
+                    "status":"SUCCESS"
+                }
+            };
+
+            reply(body);
+        }
+    });
+
+    // Resets the user's PIN and returns their new authentication keys and JWT
+    server.route({
+        method: 'POST',
+        path: '/reset-pin',
+        handler: function (request, reply) {
+            console.info('Called POST /reset-pin');
+
+            var  body =     {
+                "deviceUuid":"",
+                "accessToken":{
+                    "type":"",
+                    "token":""
+                },
+                "authKey":"",
+                "responseStatus":{
+                    "message":"",
+                    "code":"",
+                    "status":"SUCCESS"
+                }
+            };
+
+            reply(body);
+        }
+    });
 
     server.route({
         method: 'GET',

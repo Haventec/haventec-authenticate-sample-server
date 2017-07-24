@@ -22,23 +22,30 @@ npm install
 
 Start the server
 ```
-npm start apiKey applicationId port host
+npm start apiKey host port mailServerHost mailServerPort mailServerSecure mailServerUsername mailServerPassword
 ```
 
+Example
+```
+npm start 1-2-3-4 localhost 3000 smtp.example.com 456 true username@example.com password
+
+```
 Parameters:
 
-apiKey - This is your Haventec API key that is provided by [Haventec Cloud Portal](https://cloudportal.haventec.com)
-
-applicationId - This is your Haventec Application ID that is provided by [Haventec Cloud Portal](https://cloudportal.haventec.com)
-
-port - The port this server is to use, e.g 3000
-
-host - The host this server is to use, e.g localhost
+* apiKey - This is your Haventec API key that is provided by [Haventec Cloud Portal](https://cloudportal.haventec.com)
+* port - The port this server is to use, e.g 3000
+* host - The host this server is to use, e.g localhost
+* mailServerHost
+* mailServerPort
+* mailServerSecure - true for port 465, false for port 587
+* mailServerUsername
+* mailServerPassword
 
 ## Built With
 
 * [Hapi JS](https://hapijs.com/) - The web server used
 * [h2o2](https://github.com/hapijs/h2o2) - The proxy middleware used
+* [Nodemailler](https://nodemailer.com/about/) - The node email module
 
 ## Authors
 
