@@ -109,7 +109,7 @@ server.route({
     handler: function (request, reply) {
         console.info('Called POST /forgot-pin');
 
-        let email = JSON.parse(request.payload).email;
+        let email = request.payload.email;
 
         callHaventecSever('/authenticate/authentication/forgot-pin', 'POST', request.payload, function(result)  {
             let mailOptions = {
@@ -135,7 +135,7 @@ server.route({
     handler: function (request, reply) {
         console.info('Called POST /self-service/user');
 
-        let email = JSON.parse(request.payload).email;
+        let email = request.payload.email;
 
         callHaventecSever('/authenticate/self-service/user', 'POST', request.payload, function(result)  {
             let mailOptions = {
@@ -168,7 +168,7 @@ function sendEmail(options){
 }
 
 function callHaventecSever(path, method, payload, callback) {
-    const postData = payload;
+    const postData = JSON.stringify(payload);
     const options = {
         hostname: haventecServerHost,
         path: path,
