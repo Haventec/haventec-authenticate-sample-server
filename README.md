@@ -20,9 +20,14 @@ npm install
 
 ### Configure the server
 
-Edit
- ```
- config.js
+Create a config file (copy the template)
+```
+cp config.js.template config.js
+```
+
+Edit the new config.js file
+```
+config.js
 ```
 
 ### Running
