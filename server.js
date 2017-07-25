@@ -5,7 +5,7 @@ const server = new Hapi.Server();
 const nodemailer = require('nodemailer');
 const https = require('https');
 
-let haventecServerHost = 'anbe-dev-release-1-2.aws.haventec.com';
+let haventecServerHost = 'api.aws.haventec.com';
 
 let apiKey = process.argv[2];
 let serverHost = process.argv[3];
