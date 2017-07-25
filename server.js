@@ -4,22 +4,12 @@ const Hapi = require('hapi');
 const server = new Hapi.Server();
 const nodemailer = require('nodemailer');
 const https = require('https');
+const config = require('./config');
 
-let haventecServerHost = 'api.aws.haventec.com';
-
-let apiKey = process.argv[2];
-let serverHost = process.argv[3];
-let serverPort = process.argv[4];
-
-let mailServerHost = process.argv[5];
-let mailServerPort = process.argv[6];
-let mailServerSecure = process.argv[7];
-let mailServerUsername = process.argv[8];
-let mailServerPassword = process.argv[9];
 
 let globalHeaders = {
     'Content-Type': 'application/json',
-    'X-API-Key': apiKey
+    'X-API-Key': config.application.apiKey
 };
 
 /******************************
@@ -28,23 +18,22 @@ let globalHeaders = {
  *
  ******************************/
 let transporter = nodemailer.createTransport({
-    host: mailServerHost,
-    port: mailServerPort,
-    secure: (mailServerSecure === 'true'),
+    host: config.mail.host,
+    port: config.mail.port,
+    secure: config.mail.secure,
     auth: {
-        user: mailServerUsername,
-        pass: mailServerPassword
+        user: config.mail.username,
+        pass: config.mail.password
     }
 });
 
-var fromAddress = '"Haventec" <no-reply@haventec.com.com>';
 
 /******************************
  *
  * Web server config
  *
  ******************************/
-server.connection({ port: serverPort, host: serverHost, routes: { cors: true }  });
+server.connection({ port: config.server.port, host: config.server.host, routes: { cors: true }  });
 
 server.route({
     method: 'GET',
@@ -113,7 +102,7 @@ server.route({
 
         callHaventecSever('/authenticate/authentication/forgot-pin', 'POST', request.payload, function(result)  {
             let mailOptions = {
-                from: fromAddress, to: email, subject: 'My App - Reset pin',
+                from: config.mail.fromAddress, to: email, subject: 'My App - Reset pin',
                 text: 'Reset PIN code: ' + result.resetPinToken
             };
 
@@ -139,7 +128,7 @@ server.route({
 
         callHaventecSever('/authenticate/self-service/user', 'POST', request.payload, function(result)  {
             let mailOptions = {
-                from: fromAddress, to: email, subject: 'My App - Activate your account',
+                from: config.mail.fromAddress, to: email, subject: 'My App - Activate your account',
                 text: 'Activation code: ' + result.registrationToken
             };
 
@@ -170,7 +159,7 @@ function sendEmail(options){
 function callHaventecSever(path, method, payload, callback) {
     const postData = JSON.stringify(payload);
     const options = {
-        hostname: haventecServerHost,
+        hostname: config.application.haventecSever,
         path: path,
         method: method,
         headers: globalHeaders
