@@ -44,7 +44,6 @@ Parameters:
 ## Built With
 
 * [Hapi JS](https://hapijs.com/) - The web server used
-* [h2o2](https://github.com/hapijs/h2o2) - The proxy middleware used
 * [Nodemailler](https://nodemailer.com/about/) - The node email module
 
 ## Authors
