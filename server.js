@@ -3,11 +3,12 @@
 const Hapi = require('hapi');
 const server = new Hapi.Server();
 const nodemailer = require('nodemailer');
+const Wreck = require('wreck');
 
-let haventecServerURL = '';
-//var haventecServerURL = 'https://api.haventec.com/authenticate';
+//let haventecServerURL = '';
+let haventecServerURL = 'https://anbe-dev-release-1-2.aws.haventec.com/authenticate';
 
-let yourApiKey = process.argv[2];
+let apiKey = process.argv[2];
 let serverHost = process.argv[3];
 let serverPort = process.argv[4];
 let mailServerHost = process.argv[5];
@@ -18,7 +19,7 @@ let mailServerPassword = process.argv[9];
 
 let globalHeaders = {
     'Content-Type': 'application/json',
-    'X-API-Key': yourApiKey
+    'X-API-Key': apiKey
 };
 
 /******************************
@@ -78,18 +79,29 @@ server.register({
     server.route({
         method: 'POST',
         path: '/self-service/user',
-        handler: function (request, reply) {
-            console.info('Called POST /self-service/user');
+        handler: {
+            proxy: {
+                passThrough: true,
+                mapUri: function (request, callback) {
+                    let uri = haventecServerURL + request.url.path;
+                    console.info('Called POST /self-service/user');
+                    callback(null, uri, globalHeaders);
+                },
+                onResponse: function (err, res, request, reply) {
 
-            var  body = {
-                "responseStatus":{
-                    "message":"",
-                    "code":"",
-                    "status":"SUCCESS"
+                    // Get the payload from the http.IncomingMessage obj
+                    Wreck.read(res, null, function (err, payload) {
+                        let data = JSON.parse(payload.toString());
+
+                        if(data.status !== undefined){
+                            console.log(data.status);
+                        }
+
+                        // Add the headers from the upstream
+                        reply(payload).headers = res.headers;
+                    });
                 }
-            };
-
-            reply(body);
+            }
         }
     });
 
@@ -208,22 +220,22 @@ server.register({
         }
     });
 
-    server.route({
-        method: 'GET',
-        path: '/{p*}',
-        handler: {
-            proxy: {
-                mapUri: function (request, callback) {
-                    var headers = globalHeaders;
-                    var uri = haventecServerURL + request.url.path;
-                    callback(null, uri, headers);
-                },
-                onResponse: function (err, res, request, reply) {
-                    reply(res).header('X-Res-Header', 'I\'m a custom response header');
-                }
-            }
-        }
-    });
+    // server.route({
+    //     method: 'GET',
+    //     path: '/{p*}',
+    //     handler: {
+    //         proxy: {
+    //             mapUri: function (request, callback) {
+    //                 var headers = globalHeaders;
+    //                 var uri = haventecServerURL + request.url.path;
+    //                 callback(null, uri, headers);
+    //             },
+    //             onResponse: function (err, res, request, reply) {
+    //                 reply(res).header('X-Res-Header', 'I\'m a custom response header');
+    //             }
+    //         }
+    //     }
+    // });
 
     server.start(function (err) {
         console.log('Haventec Authenticate sample server started at: ' + server.info.uri);
