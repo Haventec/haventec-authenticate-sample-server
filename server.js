@@ -105,13 +105,7 @@ server.route({
 
         callHaventecSever('/authenticate/authentication/forgot-pin', 'POST', request.payload, function(result)  {
             if(result.resetToken !== undefined && result.email !== undefined){
-                let mailOptions = {
-                    from: config.mail.fromAddress, to: result.email, subject: 'My App - Reset pin',
-                    text: 'Reset PIN code: ' + result.resetToken
-                };
-
-                sendEmail(mailOptions);
-
+                sendEmail(result.email, 'My App - Reset pin', 'Reset PIN code: ' + result.resetToken);
                 // We do not want to send the email or resetToken back to the client;
                 result.email = '';
                 result.resetToken = '';
@@ -136,13 +130,8 @@ server.route({
         let email = request.payload.email;
 
         callHaventecSever('/authenticate/self-service/user', 'POST', request.payload, function(result)  {
-            let mailOptions = {
-                from: config.mail.fromAddress, to: email, subject: 'My App - Activate your account',
-                text: 'Activation code: ' + result.registrationToken
-            };
-
             if(result.registrationToken !== undefined){
-                sendEmail(mailOptions);
+                sendEmail(email, 'My App - Activate your account',  'Activation code: ' + result.registrationToken);
                 // We do not want to send the registrationToken back to the client;
                 result.registrationToken = '';
             }
@@ -152,7 +141,7 @@ server.route({
     }
 });
 
-// Test email end point
+// Test email endpoint
 server.route({
     method: 'GET',
     path: '/test-email',
@@ -163,13 +152,7 @@ server.route({
         let result = 'Test failed: no email or invalid email address use supplied. Required format is /test-email?email=value@example.com';
 
         if(validator.validate(params.email)){
-            let mailOptions = {
-                from: config.mail.fromAddress, to: params.email, subject: 'My App - Test email',
-                text: 'Test email was successful'
-            };
-
-            sendEmail(mailOptions);
-
+            sendEmail(params.email, 'My App - Test email', 'Test email was successful');
             result = 'Email sent to ' + params.email + '. Please check your inbox';
         }
         reply(result);
@@ -181,8 +164,15 @@ server.start(function (err) {
     console.log('This server is NOT intended to be used in a Production environment.');
 });
 
-function sendEmail(options){
-    transporter.sendMail(options, (error, info) => {
+function sendEmail(email, subject, body){
+    let mailOptions = {
+        from: config.mail.fromAddress,
+        to: email,
+        subject: subject,
+        text: body
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
             return console.log(error);
         }
