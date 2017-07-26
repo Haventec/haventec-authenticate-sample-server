@@ -12,7 +12,7 @@ config.application.haventecSever = 'https://anbe-dev.aws.haventec.com';
 
 // The host this server is to use, e.g localhost
 config.server.host = 'localhost';
-config.server.port = '5000';
+config.server.port = (process.env.PORT || 5000);
 
 // The mail server details
 config.mail.host = 'smtp.example.com';
