@@ -9,6 +9,7 @@
   "author": "Haventec",
   "license": "MIT",
   "dependencies": {
+    "email-validator": "^1.0.7",
     "hapi": "^16.5.0",
     "nodemailer": "^4.0.1"
   }

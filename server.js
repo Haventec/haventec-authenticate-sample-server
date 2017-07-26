@@ -5,6 +5,7 @@ const server = new Hapi.Server();
 const nodemailer = require('nodemailer');
 const https = require('https');
 const config = require('./config');
+const validator = require("email-validator");
 
 let globalHeaders = {
     'Content-Type': 'application/json',
@@ -32,7 +33,7 @@ let transporter = nodemailer.createTransport({
  * Web server config
  *
  ******************************/
-server.connection({ port: config.server.port, routes: { cors: true }  });
+server.connection({ host: config.server.host, port: config.server.port, routes: { cors: true }  });
 
 server.route({
     method: 'GET',
@@ -143,6 +144,30 @@ server.route({
 
             reply(result);
         });
+    }
+});
+
+// Test email end point
+server.route({
+    method: 'GET',
+    path: '/test-email',
+    handler: function (request, reply) {
+        console.info('Called POST /test-email');
+
+        let params = request.query;
+        let result = 'Test failed: no email or invalid email address use supplied. Required format is /test-email?email=value@example.com';
+
+        if(validator.validate(params.email)){
+            let mailOptions = {
+                from: config.mail.fromAddress, to: params.email, subject: 'My App - Test email',
+                text: 'Test email was successful'
+            };
+
+            sendEmail(mailOptions);
+
+            result = 'Email sent to ' + params.email + '. Please check your inbox';
+        }
+        reply(result);
     }
 });
 
