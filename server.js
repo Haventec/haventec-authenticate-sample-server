@@ -33,7 +33,7 @@ let transporter = nodemailer.createTransport({
  * Web server config
  *
  ******************************/
-server.connection({ port: config.server.port, host: config.server.host, routes: { cors: true }  });
+server.connection({ port: config.server.port, routes: { cors: true }  });
 
 server.route({
     method: 'GET',
