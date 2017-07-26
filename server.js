@@ -6,7 +6,6 @@ const nodemailer = require('nodemailer');
 const https = require('https');
 const config = require('./config');
 
-
 let globalHeaders = {
     'Content-Type': 'application/json',
     'X-API-Key': config.application.apiKey
@@ -73,7 +72,7 @@ server.route({
     path: '/logout',
     handler: function (request, reply) {
         console.info('Called DELETE /logout');
-        callHaventecSever('/authenticate/authentication/logout', 'POST', request.payload, function(result)  {
+        callHaventecSever('/authenticate/authentication/logout', 'DELETE', request.payload, function(result)  {
             reply(result);
         });
     }
@@ -85,7 +84,7 @@ server.route({
     path: '/reset-pin',
     handler: function (request, reply) {
         console.info('Called POST /reset-pin');
-        callHaventecSever('/authenticate/authentication/logout', 'POST', request.payload, function(result)  {
+        callHaventecSever('/authenticate/authentication/reset-pin', 'POST', request.payload, function(result)  {
             reply(result);
         });
     }
@@ -98,18 +97,18 @@ server.route({
     handler: function (request, reply) {
         console.info('Called POST /forgot-pin');
 
-        let email = request.payload.email;
-
         callHaventecSever('/authenticate/authentication/forgot-pin', 'POST', request.payload, function(result)  {
-            let mailOptions = {
-                from: config.mail.fromAddress, to: email, subject: 'My App - Reset pin',
-                text: 'Reset PIN code: ' + result.resetPinToken
-            };
+            if(result.resetToken !== undefined && result.email !== undefined){
+                let mailOptions = {
+                    from: config.mail.fromAddress, to: result.email, subject: 'My App - Reset pin',
+                    text: 'Reset PIN code: ' + result.resetToken
+                };
 
-            if(result.resetPinToken !== undefined){
                 sendEmail(mailOptions);
-                // We do not want to send the resetPinToken back to the client;
-                result.resetPinToken = '';
+
+                // We do not want to send the email or resetToken back to the client;
+                result.email = '';
+                result.resetToken = '';
             }
 
             reply(result);
@@ -124,6 +123,10 @@ server.route({
     handler: function (request, reply) {
         console.info('Called POST /self-service/user');
 
+        // Add the API key to the POST body
+        request.payload.apiKey = config.application.apiKey;
+
+        // Get the email address of the user signing up
         let email = request.payload.email;
 
         callHaventecSever('/authenticate/self-service/user', 'POST', request.payload, function(result)  {
