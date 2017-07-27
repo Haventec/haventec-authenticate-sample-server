@@ -4,6 +4,7 @@ const Hapi = require('hapi');
 const server = new Hapi.Server();
 const nodemailer = require('nodemailer');
 const https = require('https');
+const http = require('http');
 const config = require('./config');
 const validator = require("email-validator");
 
@@ -54,7 +55,7 @@ server.route({
     path: '/register/user',
     handler: function (request, reply) {
         console.info('Called POST /register/user');
-        callHaventecSever('/authenticate/authentication/register/user', 'POST', request.payload, function(result)  {
+        callHaventecServer('/authenticate/authentication/register/user', 'POST', request.payload, function(result)  {
             reply(result);
         });
     }
@@ -66,7 +67,7 @@ server.route({
     path: '/login',
     handler: function (request, reply) {
         console.info('Called POST /login');
-        callHaventecSever('/authenticate/authentication/login', 'POST', request.payload, function(result)  {
+        callHaventecServer('/authenticate/authentication/login', 'POST', request.payload, function(result)  {
             reply(result);
         });
     }
@@ -78,7 +79,7 @@ server.route({
     path: '/logout',
     handler: function (request, reply) {
         console.info('Called DELETE /logout');
-        callHaventecSever('/authenticate/authentication/logout', 'DELETE', request.payload, function(result)  {
+        callHaventecServer('/authenticate/authentication/logout', 'DELETE', request.payload, function(result)  {
             reply(result);
         });
     }
@@ -90,7 +91,7 @@ server.route({
     path: '/reset-pin',
     handler: function (request, reply) {
         console.info('Called POST /reset-pin');
-        callHaventecSever('/authenticate/authentication/reset-pin', 'POST', request.payload, function(result)  {
+        callHaventecServer('/authenticate/authentication/reset-pin', 'POST', request.payload, function(result)  {
             reply(result);
         });
     }
@@ -103,7 +104,7 @@ server.route({
     handler: function (request, reply) {
         console.info('Called POST /forgot-pin');
 
-        callHaventecSever('/authenticate/authentication/forgot-pin', 'POST', request.payload, function(result)  {
+        callHaventecServer('/authenticate/authentication/forgot-pin', 'POST', request.payload, function(result)  {
             if(result.resetToken !== undefined && result.email !== undefined){
                 sendEmail(result.email, 'My App - Reset pin', 'Reset PIN code: ' + result.resetToken);
                 // We do not want to send the email or resetToken back to the client;
@@ -129,7 +130,7 @@ server.route({
         // Get the email address of the user signing up
         let email = request.payload.email;
 
-        callHaventecSever('/authenticate/self-service/user', 'POST', request.payload, function(result)  {
+        callHaventecServer('/authenticate/self-service/user', 'POST', request.payload, function(result)  {
             if(result.registrationToken !== undefined){
                 sendEmail(email, 'My App - Activate your account',  'Activation code: ' + result.registrationToken);
                 // We do not want to send the registrationToken back to the client;
@@ -179,16 +180,18 @@ function sendEmail(email, subject, body){
     });
 }
 
-function callHaventecSever(path, method, payload, callback) {
+function callHaventecServer(path, method, payload, callback) {
     const postData = JSON.stringify(payload);
     const options = {
-        hostname: config.application.haventecSever,
+        hostname: config.application.haventecServer,
         path: path,
         method: method,
         headers: globalHeaders
     };
 
-    const req = https.request(options, (res) => {
+    console.log('postData = ' + postData);
+
+    const req = http.request(options, (res) => {
         res.setEncoding('utf8');
         res.on('data', (data) => {
             callback(JSON.parse(data));
@@ -197,6 +200,7 @@ function callHaventecSever(path, method, payload, callback) {
 
     req.on('error', (e) => {
         console.error(`problem with request: ${e.message}`);
+        console.error(e);
     });
 
     // write data to request body
