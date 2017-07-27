@@ -191,7 +191,7 @@ function callHaventecServer(path, method, payload, callback) {
 
     console.log('postData = ' + postData);
 
-    const req = http.request(options, (res) => {
+    const req = https.request(options, (res) => {
         res.setEncoding('utf8');
         res.on('data', (data) => {
             callback(JSON.parse(data));
