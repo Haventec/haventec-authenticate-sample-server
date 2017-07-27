@@ -5,7 +5,7 @@ config.server = {};
 config.mail = {};
 
 // This is your Haventec API key that is provided by Haventec Cloud Portal, https://cloudportal.haventec.com
-config.application.apiKey = '038e5228-668f-463c-ad17-8a65a196239a';
+config.application.apiKey = '53382e68-6d0b-4c71-ace2-197a8d82698f';
 
 // The Haventec Authenticate Server domain
 config.application.haventecServer = 'api.haventec.com';
