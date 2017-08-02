@@ -37,6 +37,7 @@ vi config.js
 This Sample server includes a mail module to send activation and reset tokens to your users
 
 You can run this sample server without the mail module
+
 Leave the mail configurations blank if you do not want to send emails
 ```
 config.mail.host = ''
