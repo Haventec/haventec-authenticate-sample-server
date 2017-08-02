@@ -5,6 +5,8 @@ This server is **NOT** intended to be used in a Production environment.
 
 ## Getting Started
 
+Download the sample server from [GitHub Haventec](https://github.com/Haventec/haventec-authenticate-sample-server)
+
 ### Prerequisites
 
 Install [NodeJS](https://nodejs.org)
@@ -20,14 +22,33 @@ npm install
 
 ### Configure the server
 
-Create a config file (copy the template)
+Create a config file (rename the template file)
 ```
-cp config.js.template config.js
+mv config.js.template config.js
 ```
 
-Edit the new config.js file
+Edit the config.js file
 ```
-config.js
+vi config.js
+```
+
+### Configure the mail server
+
+This Sample server includes a mail module to send activation and reset tokens to your users
+
+You can run this sample server without the mail module
+Leave the mail configurations blank if you do not want to send emails
+```
+config.mail.host === ''
+```
+
+The activation and reset tokens will be outputted to the server console (not recommended for Production)
+
+#### Testing your mail server
+
+Call the test email endpoint
+```
+ http://localhost:8080/test-email?email=name@example.com
 ```
 
 ### Running
@@ -35,6 +56,13 @@ config.js
 Start the server
 ```
 npm start 
+```
+
+#### Testing your server
+
+Go to
+```
+http://localhost:8080/
 ```
 
 ## Built With

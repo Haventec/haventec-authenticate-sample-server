@@ -1,25 +1,72 @@
+/************************************************************
+ *
+ * Sample server config
+ *
+ * Quick start - Edit the following only
+ * - config.application.apiKey
+ *
+ ************************************************************/
+
 var config = {};
 
 config.application = {};
 config.server = {};
 config.mail = {};
 
+/************************************************************
+ *
+ * Haventec server details
+ *
+ ************************************************************/
+
 // This is your Haventec API key that is provided by Haventec Cloud Portal, https://cloudportal.haventec.com
-config.application.apiKey = 'your-api-key';
+// Value - string - example: '1234-1234-1234-1234-1234'
+config.application.apiKey = '';
 
-// The Haventec Authenticate Sever domain
-config.application.haventecSever = 'api.example.com';
+// The Haventec Authenticate Server domain.
+// Change this value if you are using your own Haventec server
+config.application.haventecServer = 'api.haventc.com';
 
-// The host this server is to use, e.g localhost
-config.server.host = 'localhost';
-config.server.port = '3000';
 
-// The mail server details
-config.mail.host = 'smtp.example.com';
-config.mail.port = 456;
+/************************************************************
+ *
+ * Web server details
+ *
+ ************************************************************/
+
+// The host this server is to use
+// To work on AWS ec2 comment out config.server.host
+// Value - string - example: 'localhost'
+config.server.host = (process.env.IP || 'localhost');
+
+// The port this server is to use
+// Value - number - example: 8080
+config.server.port = (process.env.PORT || 8080);
+
+
+/************************************************************
+ *
+ * The mail server details
+ *
+ ************************************************************/
+
+// Value - string - example: 'smtp.example.com'
+config.mail.host = '';
+
+// Value - number - example: 456
+config.mail.port = 0;
+
+// Value - boolean - example: true
 config.mail.secure = false;
-config.mail.username = 'username@example.com';
-config.mail.password = 'password';
-config.mail.fromAddress = '"Name" <no-reply@example.com>';
+
+// Value - string - example: 'username@example.com'
+config.mail.username = '';
+
+// Value - string - example: 'password'
+config.mail.password = '';
+
+// Value - string - example: '"From Name" <no-reply@example.com>'
+config.mail.fromAddress = '';
+
 
 module.exports = config;
