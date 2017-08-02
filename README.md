@@ -39,7 +39,7 @@ This Sample server includes a mail module to send activation and reset tokens to
 You can run this sample server without the mail module
 Leave the mail configurations blank if you do not want to send emails
 ```
-config.mail.host === ''
+config.mail.host = ''
 ```
 
 The activation and reset tokens will be outputted to the server console (not recommended for Production)
