@@ -40,130 +40,140 @@ let transporter = nodemailer.createTransport({
     server.connection({ port: config.server.port, routes: { cors: true }  });
  }
 
-server.route({
-    method: 'GET',
-    path: '/',
-    handler: function (request, reply) {
-        reply('Haventec Authenticate sample server');
+server.register(require('inert'), (err) => {
+    if (err) {
+        throw err;
     }
-});
 
-// Registers the user and returns their new authentication keys and JWT
-server.route({
-    method: 'POST',
-    path: '/register/user',
-    handler: function (request, reply) {
-        console.info('Called POST /register/user');
-        callHaventecServer('/authenticate/authentication/register/user', 'POST', request.payload, function(result)  {
-            reply(result);
-        });
-    }
-});
+    server.route({
+        method: 'GET',
+        path: '/',
+        handler: function (request, reply) {
+            reply.file('index.html');
+        }
+    });
 
-// Logs the user in and returns a new set of authentication keys and JWT
-server.route({
-    method: 'POST',
-    path: '/login',
-    handler: function (request, reply) {
-        console.info('Called POST /login');
-        callHaventecServer('/authenticate/authentication/login', 'POST', request.payload, function(result)  {
-            reply(result);
-        });
-    }
-});
+    // Registers the user and returns their new authentication keys and JWT
+    server.route({
+        method: 'POST',
+        path: '/register/user',
+        handler: function (request, reply) {
+            console.info('Called POST /register/user');
+            callHaventecServer('/authenticate/authentication/register/user', 'POST', request.payload, function (result) {
+                reply(result);
+            });
+        }
+    });
 
-// Logs the user out and invalidates their JWT
-server.route({
-    method: 'DELETE',
-    path: '/logout',
-    handler: function (request, reply) {
-        console.info('Called DELETE /logout');
-        callHaventecServer('/authenticate/authentication/logout', 'DELETE', request.payload, function(result)  {
-            reply(result);
-        });
-    }
-});
+    // Logs the user in and returns a new set of authentication keys and JWT
+    server.route({
+        method: 'POST',
+        path: '/login',
+        handler: function (request, reply) {
+            console.info('Called POST /login');
+            callHaventecServer('/authenticate/authentication/login', 'POST', request.payload, function (result) {
+                reply(result);
+            });
+        }
+    });
 
-// Resets the user's PIN and returns their new authentication keys and JWT
-server.route({
-    method: 'POST',
-    path: '/reset-pin',
-    handler: function (request, reply) {
-        console.info('Called POST /reset-pin');
-        callHaventecServer('/authenticate/authentication/reset-pin', 'POST', request.payload, function(result)  {
-            reply(result);
-        });
-    }
-});
+    // Logs the user out and invalidates their JWT
+    server.route({
+        method: 'DELETE',
+        path: '/logout',
+        handler: function (request, reply) {
+            console.info('Called DELETE /logout');
+            callHaventecServer('/authenticate/authentication/logout', 'DELETE', request.payload, function (result) {
+                reply(result);
+            });
+        }
+    });
 
-// Calls forgot pin for a given user and returns a reset token
-server.route({
-    method: 'POST',
-    path: '/forgot-pin',
-    handler: function (request, reply) {
-        console.info('Called POST /forgot-pin');
+    // Resets the user's PIN and returns their new authentication keys and JWT
+    server.route({
+        method: 'POST',
+        path: '/reset-pin',
+        handler: function (request, reply) {
+            console.info('Called POST /reset-pin');
+            callHaventecServer('/authenticate/authentication/reset-pin', 'POST', request.payload, function (result) {
+                reply(result);
+            });
+        }
+    });
 
-        callHaventecServer('/authenticate/authentication/forgot-pin', 'POST', request.payload, function(result)  {
-            if(result.resetToken !== undefined && result.email !== undefined){
-                console.info('Reset Token', result.resetToken);
-                sendEmail(result.email, 'My App - Reset pin', 'Reset PIN code: ' + result.resetToken);
-                // We do not want to send the email or resetToken back to the client;
-                result.email = '';
-                result.resetToken = '';
-            }
+    // Calls forgot pin for a given user and returns a reset token
+    server.route({
+        method: 'POST',
+        path: '/forgot-pin',
+        handler: function (request, reply) {
+            console.info('Called POST /forgot-pin');
 
-            reply(result);
-        });
-    }
-});
+            callHaventecServer('/authenticate/authentication/forgot-pin', 'POST', request.payload, function (result) {
+                if (result.resetToken !== undefined && result.email !== undefined) {
+                    console.info('Reset Token', result.resetToken);
+                    sendEmail(result.email, 'My App - Reset pin', 'Reset PIN code: ' + result.resetToken);
+                    // We do not want to send the email or resetToken back to the client;
+                    result.email = '';
+                    result.resetToken = '';
+                }
 
-// Returns a registration token for a self-service created user
-server.route({
-    method: 'POST',
-    path: '/self-service/user',
-    handler: function (request, reply) {
-        console.info('Called POST /self-service/user');
+                reply(result);
+            });
+        }
+    });
 
-        // Add the API key to the POST body
-        request.payload.apiKey = config.application.apiKey;
+    // Returns a registration token for a self-service created user
+    server.route({
+        method: 'POST',
+        path: '/self-service/user',
+        handler: function (request, reply) {
+            console.info('Called POST /self-service/user');
 
-        // Get the email address of the user signing up
-        let email = request.payload.email;
+            // Add the API key to the POST body
+            request.payload.apiKey = config.application.apiKey;
 
-        callHaventecServer('/authenticate/self-service/user', 'POST', request.payload, function(result)  {
-            if(result.registrationToken !== undefined){
-                console.info('Registration Token', result.registrationToken);
-                sendEmail(email, 'My App - Activate your account',  'Activation code: ' + result.registrationToken);
-                // We do not want to send the registrationToken back to the client;
-                result.registrationToken = '';
-            }
+            // Get the email address of the user signing up
+            let email = request.payload.email;
 
-            reply(result);
-        });
-    }
-});
+            callHaventecServer('/authenticate/self-service/user', 'POST', request.payload, function (result) {
+                if (result.registrationToken !== undefined) {
+                    console.info('Registration Token', result.registrationToken);
+                    sendEmail(email, 'My App - Activate your account', 'Activation code: ' + result.registrationToken);
+                    // We do not want to send the registrationToken back to the client;
+                    result.registrationToken = '';
+                }
+
+                reply(result);
+            });
+        }
+    });
 
 // Test email endpoint
-server.route({
-    method: 'GET',
-    path: '/test-email',
-    handler: function (request, reply) {
-        console.info('Called POST /test-email');
+    server.route({
+        method: 'GET',
+        path: '/test-email',
+        handler: function (request, reply) {
+            console.info('Called POST /test-email');
 
-        let params = request.query;
-        let result = 'Test failed: no email or invalid email address use supplied. Required format is /test-email?email=value@example.com';
+            let params = request.query;
+            let result = 'Test failed: no email or invalid email address was supplied';
 
-        if(validator.validate(params.email)){
-            sendEmail(params.email, 'My App - Test email', 'Test email was successful');
-            result = 'Email sent to ' + params.email + '. Please check your inbox';
+            if(config.mail.host === ''){
+                result = ('Mail server is not configured. Please see the README file on how to configure your mail server');
+            }
+            else if (validator.validate(params.email)) {
+                sendEmail(params.email, 'My App - Test email', 'Test email was successful');
+                result = 'Email sent to ' + params.email + '. Please check your inbox';
+            }
+            reply(result);
         }
-        reply(result);
-    }
-});
+    });
 
-server.start(function (err) {
-    console.log('Haventec Authenticate sample server started at: ' + server.info.uri);
-    console.log('This server is NOT intended to be used in a Production environment.');
+    server.start(function (err) {
+        console.log('Haventec Authenticate sample server started at: ' + server.info.uri);
+        console.log('This server is NOT intended to be used in a Production environment.');
+    });
+
 });
 
 function sendEmail(email, subject, body){
