@@ -53,13 +53,13 @@ server.register(require('inert'), (err) => {
         }
     });
 
-    // Registers the user and returns their new authentication keys and JWT
+    // Activate the user and returns their new authentication keys and JWT
     server.route({
         method: 'POST',
-        path: '/register/user',
+        path: '/activate/user',
         handler: function (request, reply) {
-            console.info('Called POST /register/user');
-            callHaventecServer('/authenticate/authentication/register/user', 'POST', request.payload, function (result) {
+            console.info('Called POST /activate/user');
+            callHaventecServer('/authenticate/authentication/activate/user', 'POST', request.payload, function (result) {
                 reply(result);
             });
         }
@@ -101,7 +101,7 @@ server.register(require('inert'), (err) => {
         }
     });
 
-    // Calls forgot pin for a given user and returns a reset token
+    // Calls forgot pin for a given user and returns a reset PIN token
     server.route({
         method: 'POST',
         path: '/forgot-pin',
@@ -109,12 +109,12 @@ server.register(require('inert'), (err) => {
             console.info('Called POST /forgot-pin');
 
             callHaventecServer('/authenticate/authentication/forgot-pin', 'POST', request.payload, function (result) {
-                if (result.resetToken !== undefined && result.email !== undefined) {
-                    console.info('Reset Token', result.resetToken);
-                    sendEmail(result.email, 'My App - Reset pin', 'Reset PIN code: ' + result.resetToken);
-                    // We do not want to send the email or resetToken back to the client;
+                if (result.resetPinToken !== undefined && result.email !== undefined) {
+                    console.info('Reset Token', result.resetPinToken);
+                    sendEmail(result.email, 'My App - Reset pin', 'Reset PIN code: ' + result.resetPinToken);
+                    // We do not want to send the email or resetPinToken back to the client;
                     result.email = '';
-                    result.resetToken = '';
+                    result.resetPinToken = '';
                 }
 
                 reply(result);
@@ -136,11 +136,11 @@ server.register(require('inert'), (err) => {
             let email = request.payload.email;
 
             callHaventecServer('/authenticate/self-service/user', 'POST', request.payload, function (result) {
-                if (result.registrationToken !== undefined) {
-                    console.info('Registration Token', result.registrationToken);
-                    sendEmail(email, 'My App - Activate your account', 'Activation code: ' + result.registrationToken);
-                    // We do not want to send the registrationToken back to the client;
-                    result.registrationToken = '';
+                if (result.activationToken !== undefined) {
+                    console.info('Registration Token', result.activationToken);
+                    sendEmail(email, 'My App - Activate your account', 'Activation code: ' + result.activationToken);
+                    // We do not want to send the activationToken back to the client;
+                    result.activationToken = '';
                 }
 
                 reply(result);
@@ -148,7 +148,7 @@ server.register(require('inert'), (err) => {
         }
     });
 
-// Test email endpoint
+    // Test email endpoint
     server.route({
         method: 'GET',
         path: '/test-email',
