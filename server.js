@@ -65,6 +65,18 @@ server.register(require('inert'), (err) => {
         }
     });
 
+    // Activate the device and returns their new authentication keys and JWT
+    server.route({
+        method: 'POST',
+        path: '/activate/device',
+        handler: function (request, reply) {
+            console.info('Called POST /activate/device');
+            callHaventecServer('/authenticate/authentication/activate/device', 'POST', request.payload, function (result) {
+                reply(result);
+            });
+        }
+    });
+
     // Logs the user in and returns a new set of authentication keys and JWT
     server.route({
         method: 'POST',
@@ -101,6 +113,27 @@ server.register(require('inert'), (err) => {
         }
     });
 
+    // Add a new device to the users account and email the activation code to their email address
+    server.route({
+        method: 'POST',
+        path: '/device',
+        handler: function (request, reply) {
+            console.info('Called POST /self-service/device');
+
+            callHaventecServer('/authenticate/self-service/device', 'POST', request.payload, function (result) {
+                if (result.activationToken !== undefined && result.email !== undefined) {
+                    console.info('Device Activation Token', result.activationToken);
+                    sendEmail(result.email, 'My App - New Device Request', 'Device Activation code: ' + result.activationToken);
+                    // We do not want to send the email or activationToken back to the client;
+                    result.email = '';
+                    result.activationToken = '';
+                }
+
+                reply(result);
+            });
+        }
+    });
+
     // Calls forgot pin for a given user and returns a reset PIN token
     server.route({
         method: 'POST',
@@ -111,7 +144,7 @@ server.register(require('inert'), (err) => {
             callHaventecServer('/authenticate/authentication/forgot-pin', 'POST', request.payload, function (result) {
                 if (result.resetPinToken !== undefined && result.email !== undefined) {
                     console.info('Reset Token', result.resetPinToken);
-                    sendEmail(result.email, 'My App - Reset pin', 'Reset PIN code: ' + result.resetPinToken);
+                    sendEmail(result.email, 'My App - Reset PIN', 'Reset PIN code: ' + result.resetPinToken);
                     // We do not want to send the email or resetPinToken back to the client;
                     result.email = '';
                     result.resetPinToken = '';
