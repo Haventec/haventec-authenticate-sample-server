@@ -9,7 +9,7 @@ const validator = require("email-validator");
 
 let globalHeaders = {
     'Content-Type': 'application/json',
-    'X-API-Key': config.application.apiKey
+    'x-api-key': config.application.apiKey
 };
 
 /******************************
@@ -26,7 +26,6 @@ let transporter = nodemailer.createTransport({
         pass: config.mail.password
     }
 });
-
 
 /******************************
  *
@@ -59,7 +58,7 @@ server.register(require('inert'), (err) => {
         path: '/activate/user',
         handler: function (request, reply) {
             console.info('Called POST /activate/user');
-            callHaventecServer('/authenticate/authentication/activate/user', 'POST', request.payload, function (result) {
+            callHaventecServer('/authenticate/v1-2/authentication/activate/user', 'POST', request.payload, function (result) {
                 reply(result);
             });
         }
@@ -71,7 +70,7 @@ server.register(require('inert'), (err) => {
         path: '/activate/device',
         handler: function (request, reply) {
             console.info('Called POST /activate/device');
-            callHaventecServer('/authenticate/authentication/activate/device', 'POST', request.payload, function (result) {
+            callHaventecServer('/authenticate/v1-2/authentication/activate/device', 'POST', request.payload, function (result) {
                 reply(result);
             });
         }
@@ -83,7 +82,7 @@ server.register(require('inert'), (err) => {
         path: '/login',
         handler: function (request, reply) {
             console.info('Called POST /login');
-            callHaventecServer('/authenticate/authentication/login', 'POST', request.payload, function (result) {
+            callHaventecServer('/authenticate/v1-2/authentication/login', 'POST', request.payload, function (result) {
                 reply(result);
             });
         }
@@ -95,7 +94,7 @@ server.register(require('inert'), (err) => {
         path: '/logout',
         handler: function (request, reply) {
             console.info('Called DELETE /logout');
-            callHaventecServer('/authenticate/authentication/logout', 'DELETE', request.payload, function (result) {
+            callHaventecServer('/authenticate/v1-2/authentication/logout', 'DELETE', request.payload, function (result) {
                 reply(result);
             });
         }
@@ -107,7 +106,7 @@ server.register(require('inert'), (err) => {
         path: '/reset-pin',
         handler: function (request, reply) {
             console.info('Called POST /reset-pin');
-            callHaventecServer('/authenticate/authentication/reset-pin', 'POST', request.payload, function (result) {
+            callHaventecServer('/authenticate/v1-2/authentication/reset-pin', 'POST', request.payload, function (result) {
                 reply(result);
             });
         }
@@ -120,12 +119,12 @@ server.register(require('inert'), (err) => {
         handler: function (request, reply) {
             console.info('Called POST /self-service/device');
 
-            callHaventecServer('/authenticate/self-service/device', 'POST', request.payload, function (result) {
-                if (result.activationToken !== undefined && result.email !== undefined) {
+            callHaventecServer('/authenticate/v1-2/self-service/device', 'POST', request.payload, function (result) {
+                if (result.activationToken !== undefined && result.userEmail !== undefined) {
                     console.info('Device Activation Token', result.activationToken);
-                    sendEmail(result.email, 'My App - New Device Request', 'Device Activation code: ' + result.activationToken);
+                    sendEmail(result.userEmail, 'My App - New Device Request', 'Device Activation code: ' + result.activationToken);
                     // We do not want to send the email or activationToken back to the client;
-                    result.email = '';
+                    result.userEmail = '';
                     result.activationToken = '';
                 }
 
@@ -141,12 +140,12 @@ server.register(require('inert'), (err) => {
         handler: function (request, reply) {
             console.info('Called POST /forgot-pin');
 
-            callHaventecServer('/authenticate/authentication/forgot-pin', 'POST', request.payload, function (result) {
-                if (result.resetPinToken !== undefined && result.email !== undefined) {
+            callHaventecServer('/authenticate/v1-2/authentication/forgot-pin', 'POST', request.payload, function (result) {
+                if (result.resetPinToken !== undefined && result.userEmail !== undefined) {
                     console.info('Reset Token', result.resetPinToken);
-                    sendEmail(result.email, 'My App - Reset PIN', 'Reset PIN code: ' + result.resetPinToken);
+                    sendEmail(result.userEmail, 'My App - Reset PIN', 'Reset PIN code: ' + result.resetPinToken);
                     // We do not want to send the email or resetPinToken back to the client;
-                    result.email = '';
+                    result.userEmail = '';
                     result.resetPinToken = '';
                 }
 
@@ -162,15 +161,12 @@ server.register(require('inert'), (err) => {
         handler: function (request, reply) {
             console.info('Called POST /self-service/user');
 
-            // Add the API key to the POST body
-            request.payload.apiKey = config.application.apiKey;
-
             // Get the email address of the user signing up
             let email = request.payload.email;
 
-            callHaventecServer('/authenticate/self-service/user', 'POST', request.payload, function (result) {
+            callHaventecServer('/authenticate/v1-2/self-service/user', 'POST', request.payload, function (result) {
                 if (result.activationToken !== undefined) {
-                    console.info('Registration Token', result.activationToken);
+                    console.info('Activation Token', result.activationToken);
                     sendEmail(email, 'My App - Activate your account', 'Activation code: ' + result.activationToken);
                     // We do not want to send the activationToken back to the client;
                     result.activationToken = '';
