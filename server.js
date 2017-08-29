@@ -160,18 +160,7 @@ server.register(require('inert'), (err) => {
         path: '/self-service/user',
         handler: function (request, reply) {
             console.info('Called POST /self-service/user');
-
-            // Get the email address of the user signing up
-            let email = request.payload.email;
-
             callHaventecServer('/authenticate/v1-2/self-service/user', 'POST', request.payload, function (result) {
-                if (result.activationToken !== undefined) {
-                    console.info('Activation Token', result.activationToken);
-                    sendEmail(email, 'My App - Activate your account', 'Activation code: ' + result.activationToken);
-                    // We do not want to send the activationToken back to the client;
-                    result.activationToken = '';
-                }
-
                 reply(result);
             });
         }
@@ -228,13 +217,13 @@ function sendEmail(email, subject, body){
     }
 }
 
-function callHaventecServer(path, method, payload, callback) {
+function callHaventecServer(path, method, payload, callback, request) {
     const postData = JSON.stringify(payload);
     const options = {
         hostname: config.application.haventecServer,
         path: path,
         method: method,
-        headers: globalHeaders
+        headers: serHeaders(request)
     };
 
     const req = https.request(options, (res) => {
@@ -251,4 +240,12 @@ function callHaventecServer(path, method, payload, callback) {
     // write data to request body
     req.write(postData);
     req.end();
+}
+
+function serHeaders(request) {
+    if(((((request || {}).raw || {}).req || {}).headers || {}).authorization) {
+        globalHeaders['authorization'] = request.raw.req.headers.authorization;
+        return JSON.stringify(globalHeaders);
+    }
+    return globalHeaders;
 }
