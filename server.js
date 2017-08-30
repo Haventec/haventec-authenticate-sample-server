@@ -112,6 +112,18 @@ server.register(require('inert'), (err) => {
         }
     });
 
+    // Gets the current user's details
+    server.route({
+        method: 'GET',
+        path: '/user/current',
+        handler: function (request, reply) {
+            console.info('Called Get /user/current');
+            callHaventecServer('/authenticate/v1-2/user/current', 'GET', '', function (result) {
+                reply(result);
+            }, request);
+        }
+    });
+
     // Add a new device to the users account and email the activation code to their email address
     server.route({
         method: 'POST',
@@ -223,7 +235,7 @@ function callHaventecServer(path, method, payload, callback, request) {
         hostname: config.application.haventecServer,
         path: path,
         method: method,
-        headers: serHeaders(request)
+        headers: setHeaders(request)
     };
 
     const req = https.request(options, (res) => {
@@ -242,10 +254,11 @@ function callHaventecServer(path, method, payload, callback, request) {
     req.end();
 }
 
-function serHeaders(request) {
+function setHeaders(request) {
     if(((((request || {}).raw || {}).req || {}).headers || {}).authorization) {
-        globalHeaders['authorization'] = request.raw.req.headers.authorization;
-        return JSON.stringify(globalHeaders);
+        let headers = globalHeaders;
+        headers['Authorization'] = request.raw.req.headers.authorization;
+        return headers;
     }
     return globalHeaders;
 }
