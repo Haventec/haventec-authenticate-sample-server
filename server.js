@@ -6,8 +6,6 @@ const nodemailer = require('nodemailer');
 const https = require('https');
 const config = require('./config');
 const validator = require("email-validator");
-const HaventecCommon = require("@haventec/common-js")
-const haventecClient = HaventecCommon.api.haventec.common;
 
 let globalHeaders = {
     'Content-Type': 'application/json',
@@ -114,6 +112,18 @@ server.register(require('inert'), (err) => {
         }
     });
 
+    // Gets the current user's details
+    server.route({
+        method: 'GET',
+        path: '/user/current',
+        handler: function (request, reply) {
+            console.info('Called Get /user/current');
+            callHaventecServer('/authenticate/v1-2/user/current', 'GET', '', function (result) {
+                reply(result);
+            }, request);
+        }
+    });
+
     // Add a new device to the users account and email the activation code to their email address
     server.route({
         method: 'POST',
@@ -162,43 +172,32 @@ server.register(require('inert'), (err) => {
         path: '/self-service/user',
         handler: function (request, reply) {
             console.info('Called POST /self-service/user');
-
-            // Get the email address of the user signing up
-            let email = request.payload.email;
-
             callHaventecServer('/authenticate/v1-2/self-service/user', 'POST', request.payload, function (result) {
-                if (result.activationToken !== undefined) {
-                    console.info('Activation Token', result.activationToken);
-                    sendEmail(email, 'My App - Activate your account', 'Activation code: ' + result.activationToken);
-                    // We do not want to send the activationToken back to the client;
-                    result.activationToken = '';
-                }
-
                 reply(result);
             });
         }
     });
 
-        // Test email endpoint
-        server.route({
-            method: 'GET',
-            path: '/test-email',
-            handler: function (request, reply) {
-                console.info('Called POST /test-email');
+    // Test email endpoint
+    server.route({
+        method: 'GET',
+        path: '/test-email',
+        handler: function (request, reply) {
+            console.info('Called POST /test-email');
 
-                let params = request.query;
-                let result = 'Test failed: no email or invalid email address was supplied';
+            let params = request.query;
+            let result = 'Test failed: no email or invalid email address was supplied';
 
-                if(config.mail.host === ''){
-                    result = ('Mail server is not configured. Please see the README file on how to configure your mail server');
-                }
-                else if (validator.validate(params.email)) {
-                    sendEmail(params.email, 'My App - Test email', 'Test email was successful');
-                    result = 'Email sent to ' + params.email + '. Please check your inbox';
-                }
-                reply(result);
+            if(config.mail.host === ''){
+                result = ('Mail server is not configured. Please see the README file on how to configure your mail server');
             }
-        });
+            else if (validator.validate(params.email)) {
+                sendEmail(params.email, 'My App - Test email', 'Test email was successful');
+                result = 'Email sent to ' + params.email + '. Please check your inbox';
+            }
+            reply(result);
+        }
+    });
 
             // OpenID Authorization URL endpoint
             server.route({
@@ -262,13 +261,13 @@ function sendEmail(email, subject, body){
     }
 }
 
-function callHaventecServer(path, method, payload, callback) {
+function callHaventecServer(path, method, payload, callback, request) {
     const postData = JSON.stringify(payload);
     const options = {
         hostname: config.application.haventecServer,
         path: path,
         method: method,
-        headers: globalHeaders
+        headers: setHeaders(request)
     };
 
     const req = https.request(options, (res) => {
@@ -285,4 +284,13 @@ function callHaventecServer(path, method, payload, callback) {
     // write data to request body
     req.write(postData);
     req.end();
+}
+
+function setHeaders(request) {
+    if(((((request || {}).raw || {}).req || {}).headers || {}).authorization) {
+        let headers = globalHeaders;
+        headers['Authorization'] = request.raw.req.headers.authorization;
+        return headers;
+    }
+    return globalHeaders;
 }
