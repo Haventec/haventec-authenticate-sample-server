@@ -6,6 +6,8 @@ const nodemailer = require('nodemailer');
 const https = require('https');
 const config = require('./config');
 const validator = require("email-validator");
+const HaventecCommon = require("@haventec/common-js")
+const haventecClient = HaventecCommon.api.haventec.common;
 
 let globalHeaders = {
     'Content-Type': 'application/json',
@@ -177,26 +179,58 @@ server.register(require('inert'), (err) => {
         }
     });
 
-    // Test email endpoint
-    server.route({
-        method: 'GET',
-        path: '/test-email',
-        handler: function (request, reply) {
-            console.info('Called POST /test-email');
+        // Test email endpoint
+        server.route({
+            method: 'GET',
+            path: '/test-email',
+            handler: function (request, reply) {
+                console.info('Called POST /test-email');
 
-            let params = request.query;
-            let result = 'Test failed: no email or invalid email address was supplied';
+                let params = request.query;
+                let result = 'Test failed: no email or invalid email address was supplied';
 
-            if(config.mail.host === ''){
-                result = ('Mail server is not configured. Please see the README file on how to configure your mail server');
+                if(config.mail.host === ''){
+                    result = ('Mail server is not configured. Please see the README file on how to configure your mail server');
+                }
+                else if (validator.validate(params.email)) {
+                    sendEmail(params.email, 'My App - Test email', 'Test email was successful');
+                    result = 'Email sent to ' + params.email + '. Please check your inbox';
+                }
+                reply(result);
             }
-            else if (validator.validate(params.email)) {
-                sendEmail(params.email, 'My App - Test email', 'Test email was successful');
-                result = 'Email sent to ' + params.email + '. Please check your inbox';
-            }
-            reply(result);
-        }
-    });
+        });
+
+            // OpenID Authorization URL endpoint
+            server.route({
+                method: 'GET',
+                path: '/openid/auth',
+                handler: function (request, reply) {
+                    console.info('Called GET /openid/auth');
+
+                    let params = request.query;
+                    let result = 'Test failed: no email or invalid email address was supplied';
+                    //    response_type=code
+                    // &scope=openid%20profile%20email
+                    // &client_id=s6BhdRkqt3
+                    // &client_secret=blahblahblah123
+                    // &state=af0ifjsldkj
+                    // &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb
+                    let response_type = params.response_type;
+                    let scope = params.scope;
+                    let client_id = params.client_id;
+                    let client_secret = params.client_secret;
+                    let state = params.state;
+                    let redirect_uri = params.redirect_uri;
+
+                    let queryString = 'response_type=' + response_type + '&scope=' + scpope + '&client_id=' + client_id
+                    + '&client_secret=' + client_secret + '&state=' + state + '&redirect_uri=' + redirect_uri;
+
+                    callHaventecServer('/authenticate/v1-2/openid/auth?' + queryString, 'GET', function (result) {
+                        // reply(result);
+                        reply.file('./login.html');
+                    });
+                }
+            });
 
     server.start(function (err) {
         console.log('Haventec Authenticate sample server started at: ' + server.info.uri);
