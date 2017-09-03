@@ -4,6 +4,7 @@ const Hapi = require('hapi');
 const server = new Hapi.Server();
 const nodemailer = require('nodemailer');
 const https = require('https');
+const http = require('http');
 const config = require('./config');
 const validator = require("email-validator");
 
@@ -52,7 +53,39 @@ server.register(require('inert'), (err) => {
         }
     });
 
-    // Activate the user and returns their new authentication keys and JWT
+    server.route({
+        method: 'GET',
+        path: '/openid/sjcl.js',
+        handler: function (request, reply) {
+            reply.file('openid/sjcl.js');
+        }
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/openid/login.html',
+        handler: function (request, reply) {
+            reply.file('openid/login.html');
+        }
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/openid/addDevice.html',
+        handler: function (request, reply) {
+            reply.file('openid/addDevice.html');
+        }
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/openid/activateDevice.html',
+        handler: function (request, reply) {
+            reply.file('openid/activateDevice.html');
+        }
+    });
+
+// Activate the user and returns their new authentication keys and JWT
     server.route({
         method: 'POST',
         path: '/activate/user',
@@ -199,39 +232,109 @@ server.register(require('inert'), (err) => {
         }
     });
 
-            // OpenID Authorization URL endpoint
-            server.route({
-                method: 'GET',
-                path: '/openid/auth',
-                handler: function (request, reply) {
-                    console.info('Called GET /openid/auth');
+let openidAuthRequestParams = undefined;
 
-                    let params = request.query;
-                    let result = 'Test failed: no email or invalid email address was supplied';
-                    //    response_type=code
-                    // &scope=openid%20profile%20email
-                    // &client_id=s6BhdRkqt3
-                    // &client_secret=blahblahblah123
-                    // &state=af0ifjsldkj
-                    // &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb
-                    let response_type = params.response_type;
-                    let scope = params.scope;
-                    let client_id = params.client_id;
-                    let client_secret = params.client_secret;
-                    let state = params.state;
-                    let redirect_uri = params.redirect_uri;
+// OpenID Authorization URL endpoint
+server.route({
+    method: 'GET',
+    path: '/openid/auth',
+    handler: function (request, reply) {
+        console.info('Called GET /openid/auth');
 
-                    let queryString = 'response_type=' + response_type + '&scope=' + scpope + '&client_id=' + client_id
-                    + '&client_secret=' + client_secret + '&state=' + state + '&redirect_uri=' + redirect_uri;
+        let params = request.query;
+        let result = 'Test failed: no email or invalid email address was supplied';
+        //    response_type=code
+        // &scope=openid%20profile%20email
+        // &client_id=s6BhdRkqt3
+        // &client_secret=blahblahblah123
+        // &state=af0ifjsldkj
+        // &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb
+        let response_type = params.response_type;
+        let scope = params.scope;
+        let client_id = params.client_id;
+        let client_secret = params.client_secret;
+        let state = params.state;
+        let redirect_uri = params.redirect_uri;
 
-                    callHaventecServer('/authenticate/v1-2/openid/auth?' + queryString, 'GET', function (result) {
-                        // reply(result);
-                        reply.file('./login.html');
-                    });
-                }
-            });
+        openidAuthRequestParams = params;
 
-    server.start(function (err) {
+        // let queryString = 'response_type=' + response_type + '&scope=' + scpope + '&client_id=' + client_id
+        // + '&client_secret=' + client_secret + '&state=' + state + '&redirect_uri=' + redirect_uri;
+        //
+        // callHaventecServer('/authenticate/v1-2/openid/auth?' + queryString, 'GET', function (result) {
+        //     // reply(result);
+        //     reply.file('login.html');
+        // });
+
+        reply.redirect('login.html?#');
+    }
+});
+
+// OpenID Authorization URL endpoint
+server.route({
+    method: 'GET',
+    path: '/openid/authcomplete',
+    handler: function (request, reply) {
+        console.info('Called GET /openid/authcomplete');
+
+        let params = request.query;
+        let result = 'Test failed: no email or invalid email address was supplied';
+        //    response_type=code
+        // &scope=openid%20profile%20email
+        // &client_id=s6BhdRkqt3
+        // &client_secret=blahblahblah123
+        // &state=af0ifjsldkj
+        // &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb
+
+        let code = params.code;
+        let response_type = openidAuthRequestParams.response_type;
+        let scope = openidAuthRequestParams.scope;
+        let client_id = openidAuthRequestParams.client_id;
+        let client_secret = openidAuthRequestParams.client_secret;
+        let state = openidAuthRequestParams.state;
+        let redirect_uri = openidAuthRequestParams.redirect_uri;
+
+        // let queryString = 'response_type=' + response_type + '&scope=' + scpope + '&client_id=' + client_id
+        // + '&client_secret=' + client_secret + '&state=' + state + '&redirect_uri=' + redirect_uri;
+        //
+        // callHaventecServer('/authenticate/v1-2/openid/auth?' + queryString, 'GET', function (result) {
+        //     // reply(result);
+        //     reply.file('login.html');
+        // });
+
+        console.info('Called GET /openid/auth, code=' + code);
+        console.info('Called GET /openid/auth, state=' + state);
+        console.info('Called GET /openid/auth, redirect_uri=' + redirect_uri);
+
+        reply.redirect(redirect_uri + "?code=" + code + "&state="+ state);
+    }
+});
+
+// OpenID Token URL endpoint
+server.route({
+    method: 'POST',
+    path: '/openid/token',
+    handler: function (request, reply) {
+        console.info('Called POST /openid/token');
+
+        // grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
+        // &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb
+
+        var payload = request.payload;
+        payload.applicationUuid = "afb7e4d9-8c29-4063-b6de-1aa168c0d60c";
+
+        console.log("Called POST /openid/token, params = " + JSON.stringify(request.payload));
+        console.log("Called POST /openid/token, payload = " + JSON.stringify(payload));
+
+        callHaventecServer('/authenticate/v1-2/openid/token', 'POST', payload, function (result) {
+            console.log("Called POST /openid/token, result = " + JSON.stringify(result))
+
+            reply(result);
+        });
+    }
+});
+
+server.start(function (err) {
         console.log('Haventec Authenticate sample server started at: ' + server.info.uri);
         console.log('This server is NOT intended to be used in a Production environment.');
     });
@@ -270,7 +373,7 @@ function callHaventecServer(path, method, payload, callback, request) {
         headers: setHeaders(request)
     };
 
-    const req = https.request(options, (res) => {
+    const req = http.request(options, (res) => {
         res.setEncoding('utf8');
         res.on('data', (data) => {
             callback(JSON.parse(data));
