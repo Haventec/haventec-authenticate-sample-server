@@ -270,7 +270,7 @@ server.route({
     }
 });
 
-// OpenID Authorization URL endpoint
+// OpenID Authorization URL return - After auth, redirects back to the redirect_uri specified in the request
 server.route({
     method: 'GET',
     path: '/openid/authcomplete',
@@ -321,9 +321,8 @@ server.route({
         // &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb
 
         var payload = request.payload;
-        payload.applicationUuid = "afb7e4d9-8c29-4063-b6de-1aa168c0d60c";
+        payload.applicationUuid = "a5fca31b-9cf9-4704-af83-7bd7747c19f4";
 
-        console.log("Called POST /openid/token, params = " + JSON.stringify(request.payload));
         console.log("Called POST /openid/token, payload = " + JSON.stringify(payload));
 
         callHaventecServer('/authenticate/v1-2/openid/token', 'POST', payload, function (result) {
@@ -376,6 +375,7 @@ function callHaventecServer(path, method, payload, callback, request) {
     const req = http.request(options, (res) => {
         res.setEncoding('utf8');
         res.on('data', (data) => {
+            console.log(data);
             callback(JSON.parse(data));
         });
     });
