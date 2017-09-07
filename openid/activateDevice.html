@@ -19,6 +19,7 @@
         <h1 class="item">Haventec Authenticate Sample Server - OpenID Activate Device</h1>
 
         <form id="ht-form" action="#">
+            <input id="applicationUuid" type="hidden" name="applicationUuid"/>
           <input id="ht-username" type="text" placeholder="username" required/>
           <input id="ht-activationToken" type="text" placeholder="Activation Token" required/>
           <input id="ht-pin" type="text" placeholder="Pin code" required/>
@@ -31,9 +32,22 @@
 
     <script>
 
-    var thisApplicationUuid = 'a5fca31b-9cf9-4704-af83-7bd7747c19f4';
+        var getUrlParameter = function getUrlParameter(sParam) {
+            var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+                sURLVariables = sPageURL.split('&'),
+                sParameterName,
+                i;
 
-    function getBase64Hash512SaltedPin(pin, salt) {
+            for (i = 0; i < sURLVariables.length; i++) {
+                sParameterName = sURLVariables[i].split('=');
+
+                if (sParameterName[0] === sParam) {
+                    return sParameterName[1] === undefined ? true : sParameterName[1];
+                }
+            }
+        };
+
+        function getBase64Hash512SaltedPin(pin, salt) {
         let hash512 = new sjcl.hash.sha512();
         hash512.update(salt);
         hash512.update(pin);
@@ -60,12 +74,13 @@
       $("document").ready(function(){
         $("#ht-submit").click(function(){
 
+            var applicationUuid = getUrlParameter("applicationUuid");
             var username = $("#ht-username").val();
             var activationToken = $("#ht-activationToken").val();
             var pin = $("#ht-pin").val();
 
             $.post( "/activate/device", {
-                                applicationUuid: thisApplicationUuid,
+                                applicationUuid: applicationUuid,
                                 username: username,
                                 deviceUuid: localStorage.getItem("ht_" + username + "_deviceUuid"),
                                 activationToken: activationToken,
@@ -78,6 +93,8 @@
             }).fail(function(err){
                 alert("Activate Device Error: " + JSON.stringify(err));
             });
+
+            return false;
           });
         });
     </script>

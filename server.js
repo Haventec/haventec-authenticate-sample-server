@@ -266,7 +266,9 @@ server.route({
         //     reply.file('login.html');
         // });
 
-        reply.redirect('login.html?#');
+        console.log("request.query=" + JSON.stringify(request.query));
+        console.log("client_id=" + JSON.stringify(openidAuthRequestParams.client_id));
+        reply.redirect('login.html?applicationUuid=' + client_id + '&state=' + state + '&redirect_uri=' + redirect_uri);
     }
 });
 
@@ -302,11 +304,17 @@ server.route({
         //     reply.file('login.html');
         // });
 
-        console.info('Called GET /openid/auth, code=' + code);
-        console.info('Called GET /openid/auth, state=' + state);
-        console.info('Called GET /openid/auth, redirect_uri=' + redirect_uri);
+        console.info('Called GET /openid/authcomplete, code=' + code);
+        console.info('Called GET /openid/authcomplete, state=' + state);
+        console.info('Called GET /openid/authcomplete, redirect_uri=' + redirect_uri);
 
-        reply.redirect(redirect_uri + "?code=" + code + "&state="+ state);
+        // reply.redirect(redirect_uri + "?code=" + code + "&state="+ state);
+
+        callHaventecServer('/authenticate/v1-2/openid/authcomplete?code=' + code + '&state=' + state + '&redirect_uri=' + redirect_uri, 'GET', '', function (result) {
+            console.log("Called GET /openid/authcomplete, result = " + JSON.stringify(result))
+
+            reply(result);
+        });
     }
 });
 
@@ -321,7 +329,7 @@ server.route({
         // &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb
 
         var payload = request.payload;
-        payload.applicationUuid = "a5fca31b-9cf9-4704-af83-7bd7747c19f4";
+        // payload.applicationUuid = "786fb3c4-d12f-45ee-8bfd-efa99100fe76";
 
         console.log("Called POST /openid/token, payload = " + JSON.stringify(payload));
 
