@@ -272,6 +272,20 @@ server.route({
     }
 });
 
+// Logs the user in and returns a new set of authentication keys and JWT
+server.route({
+    method: 'POST',
+    path: '/openid/login',
+    handler: function (request, reply) {
+        console.info('Called POST /login');
+        callHaventecServer('/authenticate/v1-2/openid-connect-jwt/login', 'POST', request.payload, function (result) {
+            reply(result);
+        });
+    }
+});
+
+
+
 // OpenID Authorization URL return - After auth, redirects back to the redirect_uri specified in the request
 server.route({
     method: 'GET',
@@ -289,12 +303,12 @@ server.route({
         // &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb
 
         let code = params.code;
-        let response_type = openidAuthRequestParams.response_type;
-        let scope = openidAuthRequestParams.scope;
-        let client_id = openidAuthRequestParams.client_id;
-        let client_secret = openidAuthRequestParams.client_secret;
-        let state = openidAuthRequestParams.state;
-        let redirect_uri = openidAuthRequestParams.redirect_uri;
+        let state = params.state;
+        // let response_type = openidAuthRequestParams ? openidAuthRequestParams.response_type : '';
+        // let scope = openidAuthRequestParams.scope;
+        // let client_id = openidAuthRequestParams.client_id;
+        // let client_secret = openidAuthRequestParams.client_secret;
+        let redirect_uri = params.redirect_uri;
 
         // let queryString = 'response_type=' + response_type + '&scope=' + scpope + '&client_id=' + client_id
         // + '&client_secret=' + client_secret + '&state=' + state + '&redirect_uri=' + redirect_uri;
@@ -308,13 +322,13 @@ server.route({
         console.info('Called GET /openid/authcomplete, state=' + state);
         console.info('Called GET /openid/authcomplete, redirect_uri=' + redirect_uri);
 
-        // reply.redirect(redirect_uri + "?code=" + code + "&state="+ state);
+        reply.redirect(redirect_uri + "?code=" + code + "&state="+ state);
 
-        callHaventecServer('/authenticate/v1-2/openid/authcomplete?code=' + code + '&state=' + state + '&redirect_uri=' + redirect_uri, 'GET', '', function (result) {
-            console.log("Called GET /openid/authcomplete, result = " + JSON.stringify(result))
-
-            reply(result);
-        });
+        // callHaventecServer('/authenticate/v1-2/openid/authcomplete?code=' + code + '&state=' + state + '&redirect_uri=' + redirect_uri, 'GET', '', function (result) {
+        //     console.log("Called GET /openid/authcomplete, result = " + JSON.stringify(result))
+        //
+        //     reply(result);
+        // });
     }
 });
 

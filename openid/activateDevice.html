@@ -75,6 +75,8 @@
         $("#ht-submit").click(function(){
 
             var applicationUuid = getUrlParameter("applicationUuid");
+            var state = getUrlParameter("state");
+            var redirect_uri = getUrlParameter("redirect_uri");
             var username = $("#ht-username").val();
             var activationToken = $("#ht-activationToken").val();
             var pin = $("#ht-pin").val();
@@ -89,7 +91,8 @@
             function(data){
                 alert("Activate device result = " + JSON.stringify(data));
                 localStorage.setItem('ht_' + username + '_authKey', data.authKey);
-                window.open("authcomplete?code=" + data.accessToken.token, "_self");
+              window.open("authcomplete?code="
+                  + data.accessToken.token + "&state=" + state + '&redirect_uri=' + redirect_uri, "_self");
             }).fail(function(err){
                 alert("Activate Device Error: " + JSON.stringify(err));
             });

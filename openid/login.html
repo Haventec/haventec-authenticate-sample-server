@@ -73,7 +73,9 @@
 
     function gotoAddDevice() {
         var applicationUuid = getUrlParameter("applicationUuid");
-        window.open("addDevice.html?applicationUuid=" + applicationUuid, "_self");
+        var state = getUrlParameter("state");
+        var redirect_uri = getUrlParameter("redirect_uri");
+        window.open("addDevice.html?applicationUuid=" + applicationUuid + "&state=" + state + "&redirect_uri=" + redirect_uri, "_self");
     }
 
       $("document").ready(function(){
@@ -94,7 +96,7 @@
 //            String hashedPin;
 
 
-          $.post( "/login", {
+          $.post( "/openid/login", {
                                 applicationUuid: applicationUuid,
                                 username: username,
                                 deviceUuid: deviceUuid,
@@ -107,7 +109,7 @@
 //              window.open("http://localhost/authenticate/v1-2/openid/authcomplete?code="
 //                  + data.accessToken.token + "&state=" + state + '&redirect_uri=' + redirect_uri, "_self");
 
-                var thisCode = data.accessToken.token;
+                var thisCode = data.openidParameters.code;
                 window.open(redirect_uri + '?code=' + thisCode + "&state=" + state, "_self");
 
             }).fail(function(err){
