@@ -394,7 +394,7 @@ function callHaventecServer(path, method, payload, callback, request) {
         headers: setHeaders(request)
     };
 
-    const req = http.request(options, (res) => {
+    const req = https.request(options, (res) => {
         res.setEncoding('utf8');
         res.on('data', (data) => {
             console.log(data);
