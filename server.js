@@ -7,6 +7,7 @@ const https = require('https');
 const http = require('http');
 const config = require('./config');
 const validator = require("email-validator");
+const _ = require('lodash');
 
 let globalHeaders = {
     'Content-Type': 'application/json',
@@ -257,7 +258,7 @@ function callHaventecServer(path, method, payload, callback, request) {
 
 function setHeaders(request) {
     if(((((request || {}).raw || {}).req || {}).headers || {}).authorization) {
-        let headers = globalHeaders;
+        let headers = _.clone(globalHeaders);
         headers['Authorization'] = request.raw.req.headers.authorization;
         return headers;
     }
