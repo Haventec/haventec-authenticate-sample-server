@@ -162,7 +162,7 @@ server.register(require('inert'), (err) => {
         method: 'POST',
         path: '/device',
         handler: function (request, reply) {
-            console.info('Called POST /self-service/device');
+            console.info('Called POST /self-service/device with request: '+request);
 
             callHaventecServer('/authenticate/v1-2/self-service/device', 'POST', request.payload, function (result) {
                 if (result.activationToken !== undefined && result.userEmail !== undefined) {
@@ -278,7 +278,7 @@ server.route({
     path: '/openid/login',
     handler: function (request, reply) {
         console.info('Called POST /login');
-        callHaventecServer('/authenticate/v1-2/openid-connect-jwt/login', 'POST', request.payload, function (result) {
+        callHaventecServer('/authenticate/v1-2/authentication/login', 'POST', request.payload, function (result) {
             reply(result);
         });
     }
@@ -393,6 +393,8 @@ function callHaventecServer(path, method, payload, callback, request) {
         method: method,
         headers: setHeaders(request)
     };
+
+     console.info(`Sending ${options.method} to URI: ${options.hostname}${options.path}, header: ${options.headers}, body: ${postData}`);
 
     const req = http.request(options, (res) => {
         res.setEncoding('utf8');

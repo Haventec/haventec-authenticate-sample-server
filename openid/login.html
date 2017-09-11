@@ -106,10 +106,9 @@
             function(data){
                 alert("Login result = " + JSON.stringify(data));
               localStorage.setItem('ht_' + username + '_authKey', data.authKey);
-//              window.open("http://localhost/authenticate/v1-2/openid/authcomplete?code="
-//                  + data.accessToken.token + "&state=" + state + '&redirect_uri=' + redirect_uri, "_self");
-
-                var thisCode = data.openidParameters.code;
+                // Call back to KeyCloak using the redirect_uri, the state and the code generated from Authenticate
+                //Then KeyCloak will call Authenticate with that code in order to retrieve the token.
+                var thisCode = data.accessToken.token;
                 window.open(redirect_uri + '?code=' + thisCode + "&state=" + state, "_self");
 
             }).fail(function(err){
