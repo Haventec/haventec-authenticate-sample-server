@@ -5,10 +5,10 @@ config.server = {};
 config.mail = {};
 
 // This is your Haventec API key that is provided by Haventec Cloud Portal, https://cloudportal.haventec.com
-config.application.apiKey = '09b93437-b3c2-4bd3-b204-0d539bdc53e7';
+config.application.apiKey = 'd49868ec-dec1-482d-b09c-22228e6ce9e9';
 
 // The Haventec Authenticate Server domain
-config.application.haventecServer = 'anbe-dev.aws.haventec.com';
+config.application.haventecServer = 'api.haventec.com';
 
 // The host this server is to use, e.g localhost
 // config.server.host = (process.env.IP || 'localhost');

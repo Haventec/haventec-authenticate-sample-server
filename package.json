@@ -12,6 +12,8 @@
     "email-validator": "^1.1.1",
     "hapi": "^16.5.2",
     "inert": "^4.2.1",
-    "nodemailer": "^4.1.0"
+    "lodash": "^4.17.4",
+    "nodemailer": "^4.0.1",
+    "superagent": "^3.6.0"
   }
 }
