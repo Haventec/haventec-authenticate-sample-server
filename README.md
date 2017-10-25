@@ -32,9 +32,18 @@ Edit the config.js file
 vi config.js
 ```
 
-### Configure the mail server
+Add your API key
 
-This Sample server includes a mail module to send activation and reset tokens to your users
+Your API key is available in [Cloud Portal](https://cloudportal.haventec.com) account under Applications 
+``` 
+config.application.apiKey = 'xxxx-xxxx-xxxx-xxxx-xxxx';
+```
+
+### Configure the mail server (Optional)
+
+This is optional, if you do not configure your mail server the activation and reset codes will also be outputted to the server console (not recommended for Production)
+ 
+This Sample server includes a mail module to send activation and reset codes to your users
 
 You can run this sample server without the mail module
 
@@ -42,8 +51,6 @@ Leave the mail configurations blank if you do not want to send emails
 ```
 config.mail.host = ''
 ```
-
-The activation and reset tokens will be outputted to the server console (not recommended for Production)
 
 #### Testing your mail server
 
