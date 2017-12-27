@@ -7,6 +7,7 @@ const http = require('superagent');
 const config = require('./config');
 const validator = require("email-validator");
 const _ = require('lodash');
+const querystring = require('querystring');
 
 let globalHeaders = {
     'Content-Type': 'application/json',
@@ -34,11 +35,13 @@ let transporter = nodemailer.createTransport({
  *
  ******************************/
 
- if ( config.server.host ) {
+if(config.aws.lambda){
+    server.connection({ routes: { cors: true } });
+} else if ( config.server.host ) {
     server.connection({ host: config.server.host, port: config.server.port, routes: { cors: true }  });
- } else {
+} else {
     server.connection({ port: config.server.port, routes: { cors: true }  });
- }
+}
 
 server.register(require('inert'), (err) => {
     if (err) {
@@ -49,7 +52,13 @@ server.register(require('inert'), (err) => {
         method: 'GET',
         path: '/',
         handler: function (request, reply) {
-            reply.file('index.html');
+            console.info('\nCalled GET /');
+
+            if(config.aws.lambda){
+                reply('Haventec Authenticate Sample Server is running');
+            } else {
+                reply.file('index.html');
+            }
         }
     });
 
@@ -200,11 +209,12 @@ server.register(require('inert'), (err) => {
         }
     });
 
-    server.start(function (err) {
-        console.info('Haventec Authenticate sample server started at: ' + server.info.uri);
-        console.info('This server is NOT intended to be used in a Production environment.');
-    });
-
+    if(!config.aws.lambda){
+        server.start(function (err) {
+            console.info('Haventec Authenticate sample server started at: ' + server.info.uri);
+            console.info('This server is NOT intended to be used in a Production environment.');
+        });
+    }
 });
 
 function sendEmail(email, subject, body){
@@ -253,9 +263,48 @@ function setHeaders(request) {
     if(((((request || {}).raw || {}).req || {}).headers || {}).authorization) {
         let headers = _.clone(globalHeaders);
         headers['Authorization'] = request.raw.req.headers.authorization;
-        console.info('Sending Headers\n', headers);
+        console.info('Sending Authorization Headers');
         return headers;
     }
-    console.info('Sending Global Headers\n', globalHeaders);
+    console.info('Sending Global Headers');
     return globalHeaders;
 }
+
+// AWS handler and mapping lambda event to Hapi request
+exports.handler = (event, context, callback) => {
+
+    let path = '/';
+
+    if(event.path){
+        path = event.path;
+    }
+
+    if(event.queryStringParameters){
+        path = path + '?' + querystring.stringify(event.queryStringParameters);
+    }
+
+    const options = {
+        method: event.httpMethod,
+        url: path,
+        payload: event.body,
+        headers: event.headers,
+        validate: false
+    };
+
+    // AWS API gateway may be setup with additional URL paths that the Hapi server does not route
+    // This removes those paths so the Hapi server can route to the correct handler
+    options.url = options.url.replace(config.aws.removeUrl, '');
+
+    server.inject(options, function(res){
+        const response = {
+            "statusCode": 200,
+            "headers": {
+                "Access-Control-Allow-Origin": "*"
+            },
+            "body": JSON.stringify(res.result),
+            "isBase64Encoded": false
+        };
+
+        callback(null, response);
+    });
+};

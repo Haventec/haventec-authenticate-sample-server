@@ -73,6 +73,43 @@ Go to
 http://localhost:8080/
 ```
 
+
+## Running on AWS Lambda
+
+In the config file set:
+
+```
+config.aws.lambda = true;
+```
+
+Zip up the following files
+
+```
+zip -r htss.zip node_modules index.js config.js
+```
+
+Upload the htss.zip to your AWS Lambda function
+
+
+## Testing on AWS Lambda
+
+Set the Lambda test event to
+
+```
+{
+  "path": "/"
+}
+```
+
+You should see a 200 response and no errors
+
+To test your email set the Lambda test event to
+```
+{
+  "path": "/test-email?email=your.email@example.com"
+}
+```
+
 ## Built With
 
 * [Hapi JS](https://hapijs.com/) - The web server used
