@@ -36,6 +36,7 @@ let transporter = nodemailer.createTransport({
  ******************************/
 
 if(config.aws.lambda){
+    console.info('Running in AWS Lambda mode');
     server.connection({ routes: { cors: true } });
 } else if ( config.server.host ) {
     server.connection({ host: config.server.host, port: config.server.port, routes: { cors: true }  });
