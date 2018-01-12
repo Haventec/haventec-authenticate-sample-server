@@ -135,6 +135,18 @@ server.register(require('inert'), (err) => {
         }
     });
 
+    // Gets the current user's devices
+    server.route({
+        method: 'GET',
+        path: '/user/{userUuid}/device',
+        handler: function (request, reply) {
+            console.info('\nCalled Get /user/{userUuid}/device');
+            callHaventecServer('/authenticate/v1-2/user/' + request.params.userUuid + '/device', 'GET', '', function (result) {
+                reply(result);
+            }, reply, request);
+        }
+    });
+
     // Add a new device to the users account and email the activation code to their email address
     server.route({
         method: 'POST',
