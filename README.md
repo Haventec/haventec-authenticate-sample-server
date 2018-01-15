@@ -15,7 +15,7 @@ Install [NPM](https://www.npmjs.com)
 
 ### Installing
 
-Install the dependencies
+Install the dependencies within the root folder
 ```
 npm install
 ```
@@ -23,13 +23,28 @@ npm install
 ### Configure the server
 
 Create a config file (rename the template file)
+
+Linux / Mac:
 ```
 mv config.js.template config.js
 ```
 
+Windows: 
+```
+rem config.js.template config.js
+```
+
+
 Edit the config.js file
+
+Linux / Mac:
 ```
 vi config.js
+```
+
+Windows:
+```
+config.js
 ```
 
 Add your API key
@@ -51,6 +66,8 @@ Leave the mail configurations blank if you do not want to send emails
 ```
 config.mail.host = ''
 ```
+
+If you wish to use the mail functionality and do not have an existing mail server, you can create one for free: https://support.google.com/a/answer/176600?hl=en
 
 #### Testing your mail server
 
