@@ -3,10 +3,10 @@
 const Hapi = require('hapi');
 const server = new Hapi.Server();
 const nodemailer = require('nodemailer');
-const https = require('https');
-const http = require('http');
+const http = require('superagent');
 const config = require('./config');
 const validator = require("email-validator");
+const _ = require('lodash');
 
 let globalHeaders = {
     'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ server.register(require('inert'), (err) => {
             console.info('Called POST /activate/user');
             callHaventecServer('/authenticate/v1-2/authentication/activate/user', 'POST', request.payload, function (result) {
                 reply(result);
-            });
+            }, reply);
         }
     });
 
@@ -105,7 +105,7 @@ server.register(require('inert'), (err) => {
             console.info('Called POST /activate/device');
             callHaventecServer('/authenticate/v1-2/authentication/activate/device', 'POST', request.payload, function (result) {
                 reply(result);
-            });
+            }, reply);
         }
     });
 
@@ -117,7 +117,7 @@ server.register(require('inert'), (err) => {
             console.info('Called POST /login');
             callHaventecServer('/authenticate/v1-2/authentication/login', 'POST', request.payload, function (result) {
                 reply(result);
-            });
+            }, reply);
         }
     });
 
@@ -129,7 +129,7 @@ server.register(require('inert'), (err) => {
             console.info('Called DELETE /logout');
             callHaventecServer('/authenticate/v1-2/authentication/logout', 'DELETE', request.payload, function (result) {
                 reply(result);
-            });
+            }, reply);
         }
     });
 
@@ -141,7 +141,7 @@ server.register(require('inert'), (err) => {
             console.info('Called POST /reset-pin');
             callHaventecServer('/authenticate/v1-2/authentication/reset-pin', 'POST', request.payload, function (result) {
                 reply(result);
-            });
+            }, reply);
         }
     });
 
@@ -153,7 +153,7 @@ server.register(require('inert'), (err) => {
             console.info('Called Get /user/current');
             callHaventecServer('/authenticate/v1-2/user/current', 'GET', '', function (result) {
                 reply(result);
-            }, request);
+            }, reply, request);
         }
     });
 
@@ -174,7 +174,7 @@ server.register(require('inert'), (err) => {
                 }
 
                 reply(result);
-            });
+            }, reply);
         }
     });
 
@@ -195,7 +195,7 @@ server.register(require('inert'), (err) => {
                 }
 
                 reply(result);
-            });
+            }, reply);
         }
     });
 
@@ -207,7 +207,7 @@ server.register(require('inert'), (err) => {
             console.info('Called POST /self-service/user');
             callHaventecServer('/authenticate/v1-2/self-service/user', 'POST', request.payload, function (result) {
                 reply(result);
-            });
+            }, reply);
         }
     });
 
@@ -379,43 +379,32 @@ function sendEmail(email, subject, body){
                 return console.log('Mail server info', info);
             }
             if (error) {
-                return console.log(error);
+                return console.log("Send mail", error);
             }
         });
     }
 }
 
-function callHaventecServer(path, method, payload, callback, request) {
-    const postData = JSON.stringify(payload);
-    const options = {
-        hostname: config.application.haventecServer,
-        path: path,
-        method: method,
-        headers: setHeaders(request)
-    };
+function callHaventecServer(path, method, payload, callback, reply, request) {
+    const authenticateUrl = 'https://' + config.application.haventecServer + path;
 
-     console.info(`Sending ${options.method} to URI: ${options.hostname}${options.path}, header: ${options.headers}, body: ${postData}`);
+    console.log('Authenticate URL: ', authenticateUrl );
 
-    const req = http.request(options, (res) => {
-        res.setEncoding('utf8');
-        res.on('data', (data) => {
-            console.log(data);
-            callback(JSON.parse(data));
-        });
-    });
-
-    req.on('error', (e) => {
-        console.error(`problem with request: ${e.message}`);
-    });
-
-    // write data to request body
-    req.write(postData);
-    req.end();
+    http(method, authenticateUrl)
+    .send(payload)
+    .set(setHeaders(request))
+    .then(
+        (res) => {callback(res.body)},
+        (err) => {
+            console.log("ERROR:", err.message);
+            reply({responseStatus: {status: "ERROR", message: err.message, code: ""}});
+        }
+    );
 }
 
 function setHeaders(request) {
     if(((((request || {}).raw || {}).req || {}).headers || {}).authorization) {
-        let headers = globalHeaders;
+        let headers = _.clone(globalHeaders);
         headers['Authorization'] = request.raw.req.headers.authorization;
         return headers;
     }

@@ -46,7 +46,12 @@ config.server.port = (process.env.PORT || 8080);
 
 /************************************************************
  *
+ * [Optional]
+ *
  * The mail server details
+ *
+ * If these are not included, you can still get the activation
+ * codes from the server logs instead of from an email
  *
  ************************************************************/
 
