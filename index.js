@@ -168,6 +168,30 @@ server.register(require('inert'), (err) => {
         }
     });
 
+    // Delete a device
+    server.route({
+        method: 'DELETE',
+        path: '/device/{deviceUuid}',
+        handler: function (request, reply) {
+            console.info('\nCalled DELETE /device/{deviceUuid}');
+            callHaventecServer('/authenticate/v1-2/device/' + request.params.deviceUuid, 'DELETE', '', function (result) {
+                reply(result);
+            }, reply, request);
+        }
+    });
+
+    // Update a device
+    server.route({
+        method: 'PATCH',
+        path: '/device/{deviceUuid}',
+        handler: function (request, reply) {
+            console.info('\nCalled PATCH /device/{deviceUuid}');
+            callHaventecServer('/authenticate/v1-2/device/' + request.params.deviceUuid, 'PATCH', request.payload, function (result) {
+                reply(result);
+            }, reply, request);
+        }
+    });
+
     // Calls forgot pin for a given user and returns a reset PIN token
     server.route({
         method: 'POST',
