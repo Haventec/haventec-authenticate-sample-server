@@ -95,14 +95,17 @@
 //            String authKey;
 //            String hashedPin;
 
-
-          $.post( "/openid/login", {
+            var data = {
                                 applicationUuid: applicationUuid,
                                 username: username,
                                 deviceUuid: deviceUuid,
                                 authKey: authKey,
                                 hashedPin: getHashedPin(username, pin)
-                              },
+                              };
+
+            console.log("/openid/login with " + JSON.stringify(data));
+            
+          $.post( "/openid/login", data,
             function(data){
                 alert("Login result = " + JSON.stringify(data));
               localStorage.setItem('ht_' + username + '_authKey', data.authKey);

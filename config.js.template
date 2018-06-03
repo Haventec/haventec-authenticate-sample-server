@@ -9,7 +9,6 @@
 
 var config = {};
 
-config.application = {};
 config.server = {};
 config.mail = {};
 
@@ -19,13 +18,19 @@ config.mail = {};
  *
  ************************************************************/
 
-// This is your Haventec API key that is provided by Haventec Cloud Portal, https://cloudportal.haventec.com
-// Value - string - example: '1234-1234-1234-1234-1234'
-config.application.apiKey = '';
+config.env = {
+    "devAppUuid": {
+        env: "dev",
 
-// The Haventec Authenticate Server domain.
-// Change this value if you are using your own Haventec Authenticate server
-config.application.haventecServer = 'api.haventec.com';
+        // This is your Haventec API key that is provided by Haventec Cloud Portal, https://cloudportal.haventec.com
+        // Value - string - example: '1234-1234-1234-1234-1234'
+        apiKey: "dev-api-key",
+
+        // The Haventec Authenticate Server domain.
+        // Change this value if you are using your own Haventec Authenticate server
+        haventecServer: 'anbe-dev-dev.aws.haventec.com'
+    }
+}
 
 
 /************************************************************

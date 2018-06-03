@@ -4,9 +4,12 @@ const Hapi = require('hapi');
 const server = new Hapi.Server();
 const nodemailer = require('nodemailer');
 const http = require('superagent');
+require('superagent-proxy')(http);
 const config = require('./config');
 const validator = require("email-validator");
 const _ = require('lodash');
+
+var proxy = process.env.http_proxy || 'http://proxy.aws.haventec.com:8080';
 
 let globalHeaders = {
     'Content-Type': 'application/json',
@@ -157,6 +160,18 @@ server.register(require('inert'), (err) => {
         }
     });
 
+    // Gets the current user's devices
+    server.route({
+        method: 'GET',
+        path: '/user/{userUuid}/device',
+        handler: function (request, reply) {
+            console.info('\nCalled Get /user/{userUuid}/device');
+            callHaventecServer('/authenticate/v1-2/user/' + request.params.userUuid + '/device', 'GET', '', function (result) {
+                reply(result);
+            }, reply, request);
+        }
+    });
+
     // Add a new device to the users account and email the activation code to their email address
     server.route({
         method: 'POST',
@@ -169,12 +184,36 @@ server.register(require('inert'), (err) => {
                     console.info('Device Activation Token', result.activationToken);
                     sendEmail(result.userEmail, 'My App - New Device Request', 'Device Activation code: ' + result.activationToken);
                     // We do not want to send the email or activationToken back to the client;
-                    result.userEmail = '';
-                    result.activationToken = '';
+                    // result.userEmail = '';
+                    // result.activationToken = '';
                 }
 
                 reply(result);
             }, reply);
+        }
+    });
+
+    // Delete a device
+    server.route({
+        method: 'DELETE',
+        path: '/device/{deviceUuid}',
+        handler: function (request, reply) {
+            console.info('\nCalled DELETE /device/{deviceUuid}');
+            callHaventecServer('/authenticate/v1-2/device/' + request.params.deviceUuid, 'DELETE', '', function (result) {
+                reply(result);
+            }, reply, request);
+        }
+    });
+
+    // Update a device
+    server.route({
+        method: 'PATCH',
+        path: '/device/{deviceUuid}',
+        handler: function (request, reply) {
+            console.info('\nCalled PATCH /device/{deviceUuid}');
+            callHaventecServer('/authenticate/v1-2/device/' + request.params.deviceUuid, 'PATCH', request.payload, function (result) {
+                reply(result);
+            }, reply, request);
         }
     });
 
@@ -190,8 +229,8 @@ server.register(require('inert'), (err) => {
                     console.info('Reset Token', result.resetPinToken);
                     sendEmail(result.userEmail, 'My App - Reset PIN', 'Reset PIN code: ' + result.resetPinToken);
                     // We do not want to send the email or resetPinToken back to the client;
-                    result.userEmail = '';
-                    result.resetPinToken = '';
+                    // result.userEmail = '';
+                    // result.resetPinToken = '';
                 }
 
                 reply(result);
@@ -390,27 +429,108 @@ function sendEmail(email, subject, body){
 }
 
 function callHaventecServer(path, method, payload, callback, reply, request) {
-    const authenticateUrl = 'https://' + config.application.haventecServer + path;
+    let haventecServer = config.application.haventecServer;
+    let applicationUuid = 'not set';
+    let apiKey = config.application.apiKey;
+    let env = 'no set';
+
+    if ( payload.applicationUuid ) {
+        applicationUuid = payload.applicationUuid;
+        haventecServer = config.env[payload.applicationUuid].haventecServer;
+        apiKey = config.env[payload.applicationUuid].apiKey;
+        env = config.env[payload.applicationUuid].env;
+    }
+
+    console.log("Env = " + env);
+    console.log("haventecServer = " + haventecServer);
+    console.log("apiKey = " + apiKey);
+    console.log("applicationUuid = " + applicationUuid);
+    const authenticateUrl = 'https://' + haventecServer + path;
 
     console.log('Authenticate URL: ', authenticateUrl );
 
-    http(method, authenticateUrl)
-    .send(payload)
-    .set(setHeaders(request))
-    .then(
-        (res) => {callback(res.body)},
+    console.log('callHaventecServer: ' + path + ' ' + method + " with "  + JSON.stringify(payload));
+
+    if ( env === 'production' ) {
+        http(method, authenticateUrl)
+            .send(payload)
+            .set(setHeaders(request, apiKey))
+            .proxy(proxy)
+            .then(
+                (res) => {callback(res.body)},
         (err) => {
             console.log("ERROR:", err.message);
             reply({responseStatus: {status: "ERROR", message: err.message, code: ""}});
         }
     );
+    } else {
+        http(method, authenticateUrl)
+            .send(payload)
+            .set(setHeaders(request, apiKey))
+            .then(
+                (res) => {callback(res.body)},
+        (err) => {
+            console.log("ERROR:", err.message);
+            reply({responseStatus: {status: "ERROR", message: err.message, code: ""}});
+        }
+    );
+    }
 }
 
-function setHeaders(request) {
+function setHeaders(request, apiKey) {
     if(((((request || {}).raw || {}).req || {}).headers || {}).authorization) {
         let headers = _.clone(globalHeaders);
+        if ( apiKey ) {
+            headers['x-api-key'] = apiKey;
+        }
         headers['Authorization'] = request.raw.req.headers.authorization;
+
+        console.log(headers);
         return headers;
     }
+
+    if ( apiKey ) {
+        globalHeaders['x-api-key'] = apiKey;
+    }
+    console.log(globalHeaders);
     return globalHeaders;
 }
+
+// AWS handler and mapping lambda event to Hapi request
+exports.handler = (event, context, callback) => {
+
+    let path = '/';
+
+    if(event.path){
+        path = event.path;
+    }
+
+    if(event.queryStringParameters){
+        path = path + '?' + querystring.stringify(event.queryStringParameters);
+    }
+
+    const options = {
+        method: event.httpMethod,
+        url: path,
+        payload: event.body,
+        headers: event.headers,
+        validate: false
+    };
+
+    // AWS API gateway may be setup with additional URL paths that the Hapi server does not route
+    // This removes those paths so the Hapi server can route to the correct handler
+    options.url = options.url.replace(config.aws.removeUrl, '');
+
+    server.inject(options, function(res){
+        const response = {
+            "statusCode": 200,
+            "headers": {
+                "Access-Control-Allow-Origin": "*"
+            },
+            "body": JSON.stringify(res.result),
+            "isBase64Encoded": false
+        };
+
+        callback(null, response);
+    });
+};
