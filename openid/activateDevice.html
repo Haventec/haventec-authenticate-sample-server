@@ -77,11 +77,12 @@
             var applicationUuid = getUrlParameter("applicationUuid");
             var state = getUrlParameter("state");
             var redirect_uri = getUrlParameter("redirect_uri");
+            var nonce = getUrlParameter("nonce")
             var username = $("#ht-username").val();
             var activationToken = $("#ht-activationToken").val();
             var pin = $("#ht-pin").val();
 
-            $.post( "/activate/device", {
+            $.post( "/activate/device?nonce=" + nonce, {
                                 applicationUuid: applicationUuid,
                                 username: username,
                                 deviceUuid: localStorage.getItem("ht_" + username + "_deviceUuid"),

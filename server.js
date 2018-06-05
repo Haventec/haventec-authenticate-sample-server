@@ -91,7 +91,15 @@ server.register(require('inert'), (err) => {
         path: '/activate/user',
         handler: function (request, reply) {
             console.info('Called POST /activate/user');
-            callHaventecServer('/authenticate/v1-2/authentication/activate/user', 'POST', request.payload, function (result) {
+
+            let params = request.query;
+            let nonce = params.nonce;
+            let queryParameters = '';
+            if(typeof nonce !== 'undefined' && nonce && nonce != 'undefined') {
+                queryParameters = '?nonce=' + nonce;
+            }
+            console.info('POST /activate/user with query parameters: ' + queryParameters);
+            callHaventecServer('/authenticate/v1-2/authentication/activate/user' + queryParameters, 'POST', request.payload, function (result) {
                 reply(result);
             }, reply);
         }
@@ -103,7 +111,15 @@ server.register(require('inert'), (err) => {
         path: '/activate/device',
         handler: function (request, reply) {
             console.info('Called POST /activate/device');
-            callHaventecServer('/authenticate/v1-2/authentication/activate/device', 'POST', request.payload, function (result) {
+
+            let params = request.query;
+            let nonce = params.nonce;
+            let queryParameters = '';
+            if(typeof nonce !== 'undefined' && nonce && nonce != 'undefined') {
+                queryParameters = '?nonce=' + nonce;
+            }
+            console.info('POST /activate/device with query parameters: ' + queryParameters);
+            callHaventecServer('/authenticate/v1-2/authentication/activate/device' + queryParameters, 'POST', request.payload, function (result) {
                 reply(result);
             }, reply);
         }
@@ -115,7 +131,15 @@ server.register(require('inert'), (err) => {
         path: '/login',
         handler: function (request, reply) {
             console.info('Called POST /login');
-            callHaventecServer('/authenticate/v1-2/authentication/login', 'POST', request.payload, function (result) {
+
+            let params = request.query;
+            let nonce = params.nonce;
+            let queryParameters = '';
+            if(typeof nonce !== 'undefined' && nonce && nonce != 'undefined') {
+                queryParameters = '?nonce=' + nonce;
+            }
+            console.info('POST /login with query parameters: ' + queryParameters);
+            callHaventecServer('/authenticate/v1-2/authentication/login' + queryParameters, 'POST', request.payload, function (result) {
                 reply(result);
             }, reply);
         }
@@ -255,6 +279,7 @@ server.route({
         let client_secret = params.client_secret;
         let state = params.state;
         let redirect_uri = params.redirect_uri;
+        let nonce = params.nonce;
 
         openidAuthRequestParams = params;
 
@@ -268,7 +293,7 @@ server.route({
 
         console.log("request.query=" + JSON.stringify(request.query));
         console.log("client_id=" + JSON.stringify(openidAuthRequestParams.client_id));
-        reply.redirect('login.html?applicationUuid=' + client_id + '&state=' + state + '&redirect_uri=' + redirect_uri);
+        reply.redirect('login.html?applicationUuid=' + client_id + '&state=' + state + '&redirect_uri=' + redirect_uri + '&nonce=' + nonce);
     }
 });
 
@@ -278,7 +303,15 @@ server.route({
     path: '/openid/login',
     handler: function (request, reply) {
         console.info('Called POST /login');
-        callHaventecServer('/authenticate/v1-2/authentication/login', 'POST', request.payload, function (result) {
+
+        let params = request.query;
+        let nonce = params.nonce;
+        let queryParameters = '';
+        if(typeof nonce !== 'undefined' && nonce && nonce != 'undefined') {
+            queryParameters = '?nonce=' + nonce;
+        }
+        console.info('POST /login with query parameters: ' + queryParameters);
+        callHaventecServer('/authenticate/v1-2/authentication/login' + queryParameters, 'POST', request.payload, function (result) {
             reply(result);
         });
     }
@@ -386,6 +419,7 @@ function sendEmail(email, subject, body){
 }
 
 function callHaventecServer(path, method, payload, callback, reply, request) {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     const authenticateUrl = 'https://' + config.application.haventecServer + path;
 
     console.log('Authenticate URL: ', authenticateUrl );

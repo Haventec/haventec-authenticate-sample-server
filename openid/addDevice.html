@@ -49,10 +49,11 @@
             var applicationUuid = getUrlParameter("applicationUuid");
             var state = getUrlParameter("state");
             var redirect_uri = getUrlParameter("redirect_uri");
+            var nonce = getUrlParameter("nonce");
           var username = $("#ht-username").val();
           var deviceName = $("#ht-deviceName").val();
 
-          $.post( "/device", {
+          $.post( "/device?nonce=" + nonce, {
                                 applicationUuid: applicationUuid,
                                 username: username,
                                 deviceName: deviceName
@@ -61,7 +62,12 @@
                 alert("Add device result = " + JSON.stringify(data));
               localStorage.setItem('ht_' + username + '_deviceUuid', data.deviceUuid);
 
-              window.open("activateDevice.html?applicationUuid=" + applicationUuid + "&state=" + state + "&redirect_uri=" + redirect_uri, "_self");
+              window.open("activateDevice.html?applicationUuid=" + applicationUuid
+                  + "&state=" + state
+                  + "&redirect_uri="
+                  + redirect_uri
+                  + "&nonce=" + nonce,
+                  "_self");
             }).fail(function(err){
               alert("Add Device Error: " + JSON.stringify(err));
             });

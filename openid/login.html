@@ -32,20 +32,20 @@
 
     <script>
 
-        var getUrlParameter = function getUrlParameter(sParam) {
-            var sPageURL = decodeURIComponent(window.location.search.substring(1)),
-                sURLVariables = sPageURL.split('&'),
-                sParameterName,
-                i;
+    var getUrlParameter = function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+            sURLVariables = sPageURL.split('&'),
+            sParameterName,
+            i;
 
-            for (i = 0; i < sURLVariables.length; i++) {
-                sParameterName = sURLVariables[i].split('=');
+        for (i = 0; i < sURLVariables.length; i++) {
+            sParameterName = sURLVariables[i].split('=');
 
-                if (sParameterName[0] === sParam) {
-                    return sParameterName[1] === undefined ? true : sParameterName[1];
-                }
+            if (sParameterName[0] === sParam) {
+                return sParameterName[1] === undefined ? true : sParameterName[1];
             }
-        };
+        }
+    };
 
     function getBase64Hash512SaltedPin(pin, salt) {
         let hash512 = new sjcl.hash.sha512();
@@ -75,7 +75,12 @@
         var applicationUuid = getUrlParameter("applicationUuid");
         var state = getUrlParameter("state");
         var redirect_uri = getUrlParameter("redirect_uri");
-        window.open("addDevice.html?applicationUuid=" + applicationUuid + "&state=" + state + "&redirect_uri=" + redirect_uri, "_self");
+        var nonce = getUrlParameter("nonce");
+        var queryParameters = "?applicationUuid=" + applicationUuid + "&state=" + state + "&redirect_uri=" + redirect_uri;
+        if(nonce) {
+            queryParameters += "&nonce=" + nonce;
+        }
+        window.open("addDevice.html" + queryParameters, "_self");
     }
 
       $("document").ready(function(){
@@ -84,35 +89,34 @@
             var applicationUuid = getUrlParameter("applicationUuid");
             var state = getUrlParameter("state");
             var redirect_uri = getUrlParameter("redirect_uri");
+            var nonce = getUrlParameter("nonce");
             var username = $("#ht-username").val();
             var pin = $("#ht-pin").val();
             var deviceUuid = localStorage.getItem("ht_" + username + "_deviceUuid");
             var authKey = localStorage.getItem("ht_" + username + "_authKey");
-
-//            String username;
-//            String applicationUuid;
-//            String deviceUuid;
-//            String authKey;
-//            String hashedPin;
+            var queryParameters = "";
+            if(nonce) {
+                queryParameters = "?nonce=" + nonce;
+            }
 
 
-          $.post( "/openid/login", {
-                                applicationUuid: applicationUuid,
-                                username: username,
-                                deviceUuid: deviceUuid,
-                                authKey: authKey,
-                                hashedPin: getHashedPin(username, pin)
-                              },
-            function(data){
-                alert("Login result = " + JSON.stringify(data));
-              localStorage.setItem('ht_' + username + '_authKey', data.authKey);
-                // Call back to KeyCloak using the redirect_uri, the state and the code generated from Authenticate
-                //Then KeyCloak will call Authenticate with that code in order to retrieve the token.
-                var thisCode = data.accessToken.token;
-                window.open(redirect_uri + '?code=' + thisCode + "&state=" + state, "_self");
+            $.post( "/openid/login" + queryParameters, {
+                    applicationUuid: applicationUuid,
+                    username: username,
+                    deviceUuid: deviceUuid,
+                    authKey: authKey,
+                    hashedPin: getHashedPin(username, pin)
+                },
+                function(data){
+                    alert("Login result = " + JSON.stringify(data));
+                    localStorage.setItem('ht_' + username + '_authKey', data.authKey);
+                    // Call back to KeyCloak using the redirect_uri, the state and the code generated from Authenticate
+                    //Then KeyCloak will call Authenticate with that code in order to retrieve the token.
+                    var thisCode = data.accessToken.token;
+                    window.open(redirect_uri + '?code=' + thisCode + "&state=" + state, "_self");
 
-            }).fail(function(err){
-              alert("Login Error: " + JSON.stringify(err));
+                }).fail(function(err){
+                alert("Login Error: " + JSON.stringify(err));
             });
 
             return false;
