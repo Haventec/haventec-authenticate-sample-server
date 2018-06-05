@@ -313,7 +313,7 @@ server.route({
         console.info('POST /login with query parameters: ' + queryParameters);
         callHaventecServer('/authenticate/v1-2/authentication/login' + queryParameters, 'POST', request.payload, function (result) {
             reply(result);
-        });
+        }, reply);
     }
 });
 
@@ -384,13 +384,17 @@ server.route({
             console.log("Called POST /openid/token, result = " + JSON.stringify(result))
 
             reply(result);
-        });
+        }, reply);
     }
 });
 
 server.start(function (err) {
         console.log('Haventec Authenticate sample server started at: ' + server.info.uri);
         console.log('This server is NOT intended to be used in a Production environment.');
+
+        if ( err ) {
+            console.log(err);
+        }
     });
 
 });
