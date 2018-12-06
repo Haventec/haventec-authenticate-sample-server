@@ -76,12 +76,13 @@
 
             var applicationUuid = getUrlParameter("applicationUuid");
             var state = getUrlParameter("state");
+            var htOidTxid = getUrlParameter("htOidTxid");
             var redirect_uri = getUrlParameter("redirect_uri");
             var username = $("#ht-username").val();
             var activationToken = $("#ht-activationToken").val();
             var pin = $("#ht-pin").val();
 
-            $.post( "/activate/device", {
+            $.post( "/activate/device?htOidTxid=" + htOidTxid, {
                                 applicationUuid: applicationUuid,
                                 username: username,
                                 deviceUuid: localStorage.getItem("ht_" + username + "_deviceUuid"),

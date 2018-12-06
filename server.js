@@ -105,8 +105,8 @@ server.register(require('inert'), (err) => {
         method: 'POST',
         path: '/activate/device',
         handler: function (request, reply) {
-            console.info('Called POST /activate/device');
-            callHaventecServer('/authenticate/v1-2/authentication/activate/device', 'POST', request.payload, function (result) {
+            console.info('Called POST /activate/device with request.query ' + JSON.stringify(request.query));
+            callHaventecServer('/authenticate/v1-2/authentication/activate/device?htOidTxid='+request.query.htOidTxid, 'POST', request.payload, function (result) {
                 reply(result);
             }, reply);
         }
@@ -177,7 +177,7 @@ server.register(require('inert'), (err) => {
         method: 'POST',
         path: '/device',
         handler: function (request, reply) {
-            console.info('Called POST /self-service/device with request: '+request);
+            console.info('Called POST /self-service/device with request.query: '+JSON.stringify(request.query));
 
             callHaventecServer('/authenticate/v1-2/self-service/device', 'POST', request.payload, function (result) {
                 if (result.activationToken !== undefined && result.userEmail !== undefined) {
@@ -294,6 +294,7 @@ server.route({
         let client_secret = params.client_secret;
         let state = params.state;
         let redirect_uri = params.redirect_uri;
+        let htOidTxid = params.htOidTxid;
 
         openidAuthRequestParams = params;
 
@@ -307,7 +308,7 @@ server.route({
 
         console.log("request.query=" + JSON.stringify(request.query));
         console.log("client_id=" + JSON.stringify(openidAuthRequestParams.client_id));
-        reply.redirect('login.html?applicationUuid=' + client_id + '&state=' + state + '&redirect_uri=' + redirect_uri);
+        reply.redirect('login.html?applicationUuid=' + client_id + '&state=' + state + '&htOidTxid=' + htOidTxid + '&redirect_uri=' + redirect_uri);
     }
 });
 
@@ -316,8 +317,8 @@ server.route({
     method: 'POST',
     path: '/openid/login',
     handler: function (request, reply) {
-        console.info('Called POST /login');
-        callHaventecServer('/authenticate/v1-2/authentication/login', 'POST', request.payload, function (result) {
+        console.info('Called POST /login, with query=' + JSON.stringify(request.query));
+        callHaventecServer('/authenticate/v1-2/authentication/login?htOidTxid=' + request.query.htOidTxid, 'POST', request.payload, function (result) {
             reply(result);
         }, reply);
     }
@@ -445,7 +446,10 @@ function callHaventecServer(path, method, payload, callback, reply, request) {
     console.log("haventecServer = " + haventecServer);
     console.log("apiKey = " + apiKey);
     console.log("applicationUuid = " + applicationUuid);
-    const authenticateUrl = 'https://' + haventecServer + path;
+    let authenticateUrl = 'https://' + haventecServer + path;
+    if ( haventecServer === 'localhost' ) {
+        authenticateUrl = 'http://' + haventecServer + path;
+    }
 
     console.log('Authenticate URL: ', authenticateUrl );
 

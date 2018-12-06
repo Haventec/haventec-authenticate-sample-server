@@ -74,8 +74,9 @@
     function gotoAddDevice() {
         var applicationUuid = getUrlParameter("applicationUuid");
         var state = getUrlParameter("state");
+        var htOidTxid = getUrlParameter("htOidTxid");
         var redirect_uri = getUrlParameter("redirect_uri");
-        window.open("addDevice.html?applicationUuid=" + applicationUuid + "&state=" + state + "&redirect_uri=" + redirect_uri, "_self");
+        window.open("addDevice.html?applicationUuid=" + applicationUuid + "&state=" + state + "&htOidTxid=" + htOidTxid + "&redirect_uri=" + redirect_uri, "_self");
     }
 
       $("document").ready(function(){
@@ -83,6 +84,7 @@
 
             var applicationUuid = getUrlParameter("applicationUuid");
             var state = getUrlParameter("state");
+            var htOidTxid = getUrlParameter("htOidTxid");
             var redirect_uri = getUrlParameter("redirect_uri");
             var username = $("#ht-username").val();
             var pin = $("#ht-pin").val();
@@ -105,7 +107,7 @@
 
             console.log("/openid/login with " + JSON.stringify(data));
             
-          $.post( "/openid/login", data,
+          $.post( "/openid/login?htOidTxid=" + htOidTxid , data,
             function(data){
                 alert("Login result = " + JSON.stringify(data));
               localStorage.setItem('ht_' + username + '_authKey', data.authKey);
