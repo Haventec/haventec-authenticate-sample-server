@@ -445,7 +445,7 @@ function callHaventecServer(path, method, payload, callback, reply, request) {
     console.log("haventecServer = " + haventecServer);
     console.log("apiKey = " + apiKey);
     console.log("applicationUuid = " + applicationUuid);
-    const authenticateUrl = 'https://' + haventecServer + path;
+    const authenticateUrl = haventecServer + path;
 
     console.log('Authenticate URL: ', authenticateUrl );
 

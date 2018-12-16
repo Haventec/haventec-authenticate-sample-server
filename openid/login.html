@@ -107,7 +107,7 @@
             
           $.post( "/openid/login", data,
             function(data){
-                alert("Login result = " + JSON.stringify(data));
+                // alert("Login result = " + JSON.stringify(data));
               localStorage.setItem('ht_' + username + '_authKey', data.authKey);
                 // Call back to KeyCloak using the redirect_uri, the state and the code generated from Authenticate
                 //Then KeyCloak will call Authenticate with that code in order to retrieve the token.
