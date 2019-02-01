@@ -109,14 +109,22 @@
                 },
                 function(data){
                     alert("Login result = " + JSON.stringify(data));
-                    localStorage.setItem('ht_' + username + '_authKey', data.authKey);
-                    // Call back to KeyCloak using the redirect_uri, the state and the code generated from Authenticate
-                    //Then KeyCloak will call Authenticate with that code in order to retrieve the token.
-                    var thisCode = data.accessToken.token;
-                    window.open(redirect_uri + '?code=' + thisCode + "&state=" + state, "_self");
+                    if(data.responseStatus.status !== 'ERROR') {
+                        localStorage.setItem('ht_' + username + '_authKey', data.authKey);
+                        // Call back to KeyCloak using the redirect_uri, the state and the code generated from Authenticate
+                        //Then KeyCloak will call Authenticate with that code in order to retrieve the token.
+                        var thisCode = data.accessToken.token;
+
+
+                        alert("Login result ok= " + JSON.stringify(data));
+                        window.open(redirect_uri + '?code=' + thisCode + "&state=" + state, "_self");
+                    } else {
+                        alert("Login Error");
+                        window.open(redirect_uri + '?error=access_denied&error_description=Login_failed', "_self");
+                    }
 
                 }).fail(function(err){
-                alert("Login Error: " + JSON.stringify(err));
+                    alert("Login Error: " + JSON.stringify(err));
             });
 
             return false;

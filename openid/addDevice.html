@@ -69,7 +69,7 @@
                   + "&nonce=" + nonce,
                   "_self");
             }).fail(function(err){
-              alert("Add Device Error: " + JSON.stringify(err));
+              window.open(redirect_uri + '?error=access_denied&error_description=Login_failed', "_self");
             });
 
             return false;
