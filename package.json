@@ -9,11 +9,11 @@
   "author": "Haventec",
   "license": "MIT",
   "dependencies": {
-    "email-validator": "^1.0.7",
-    "hapi": "^16.5.0",
-    "inert": "^4.2.1",
+    "email-validator": "^2.0.4",
+    "hapi": "^18.1.0",
+    "inert": "^5.1.2",
     "lodash": "^4.17.4",
-    "nodemailer": "^4.0.1",
-    "superagent": "^3.6.0"
+    "nodemailer": "^5.1.1",
+    "superagent": "^4.1.0"
   }
 }

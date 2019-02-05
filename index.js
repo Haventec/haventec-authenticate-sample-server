@@ -1,7 +1,7 @@
 'use strict';
 
 const Hapi = require('hapi');
-const server = new Hapi.Server();
+let server = null;
 const nodemailer = require('nodemailer');
 const http = require('superagent');
 const config = require('./config');
@@ -35,13 +35,13 @@ let transporter = nodemailer.createTransport({
  *
  ******************************/
 
-if(config.aws.lambda){
+if(config.aws && config.aws.lambda){
     console.info('Running in AWS Lambda mode');
-    server.connection({ routes: { cors: true } });
+    server = new Hapi.Server({ routes: { cors: true } });
 } else if ( config.server.host ) {
-    server.connection({ host: config.server.host, port: config.server.port, routes: { cors: true }  });
+    server = new Hapi.Server({ host: config.server.host, port: config.server.port, routes: { cors: true }  });
 } else {
-    server.connection({ port: config.server.port, routes: { cors: true }  });
+    server = new Hapi.Server({ port: config.server.port, routes: { cors: true }  });
 }
 
 server.register(require('inert'), (err) => {
