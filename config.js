@@ -5,21 +5,21 @@ config.server = {};
 config.mail = {};
 
 // This is your Haventec API key that is provided by Haventec Cloud Portal, https://cloudportal.haventec.com
-config.application.apiKey = '038e5228-668f-463c-ad17-8a65a196239a';
+config.application.apiKey = 'your-api-key';
 
-// The Haventec Authenticate Server domain
-config.application.haventecServer = 'localhost';
+// The Haventec Authenticate Sever domain
+config.application.haventecSever = 'https://anbe-dev.aws.haventec.com';
 
 // The host this server is to use, e.g localhost
 // config.server.host = (process.env.IP || 'localhost');
-config.server.port = (process.env.PORT || 3000);
+config.server.port = (process.env.PORT || 5000);
 
 // The mail server details
-config.mail.host = 'smtp.gmail.com';
-config.mail.port = 587;
+config.mail.host = 'smtp.example.com';
+config.mail.port = 456;
 config.mail.secure = false;
-config.mail.username = 'smtp.relay@haventec.com';
-config.mail.password = 'q*Xyr9nh*';
-config.mail.fromAddress = '"Haventec" <no-reply@haventec.com>';
+config.mail.username = 'username@example.com';
+config.mail.password = 'password';
+config.mail.fromAddress = '"Name" <no-reply@example.com>';
 
 module.exports = config;
