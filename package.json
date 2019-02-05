@@ -2,9 +2,9 @@
   "name": "haventec-authenticate-sample-server",
   "version": "1.0.0",
   "description": "Haventec Authenticate sample server",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node index.js"
   },
   "author": "Haventec",
   "license": "MIT",

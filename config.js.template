@@ -12,6 +12,7 @@ var config = {};
 config.application = {};
 config.server = {};
 config.mail = {};
+config.aws = {};
 
 /************************************************************
  *
@@ -43,6 +44,22 @@ config.server.host = (process.env.IP || 'localhost');
 // Value - number - example: 8080
 config.server.port = (process.env.PORT || 8080);
 
+
+/************************************************************
+ *
+ * [Optional]
+ *
+ * AWS details
+ *
+ ************************************************************/
+
+// Set this to true if you are deploying to AWS Lambda
+// Value - boolean - example: true
+config.aws.lambda = false;
+
+// Set this value if you want to remove part of the url before passing the request to Hapi
+// Value - string - example: '/some/url-prefix/to-remove'
+config.aws.removeUrl = '';
 
 /************************************************************
  *

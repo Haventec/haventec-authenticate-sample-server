@@ -15,7 +15,7 @@ Install [NPM](https://www.npmjs.com)
 
 ### Installing
 
-Install the dependencies
+Install the dependencies within the root folder
 ```
 npm install
 ```
@@ -23,18 +23,42 @@ npm install
 ### Configure the server
 
 Create a config file (rename the template file)
+
+Linux / Mac:
 ```
 mv config.js.template config.js
 ```
 
+Windows: 
+```
+rem config.js.template config.js
+```
+
+
 Edit the config.js file
+
+Linux / Mac:
 ```
 vi config.js
 ```
 
-### Configure the mail server
+Windows:
+```
+config.js
+```
 
-This Sample server includes a mail module to send activation and reset tokens to your users
+Add your API key
+
+Your API key is available in [Cloud Portal](https://cloudportal.haventec.com) account under Applications 
+``` 
+config.application.apiKey = 'xxxx-xxxx-xxxx-xxxx-xxxx';
+```
+
+### Configure the mail server (Optional)
+
+This is optional, if you do not configure your mail server the activation and reset codes will also be outputted to the server console (not recommended for Production)
+ 
+This Sample server includes a mail module to send activation and reset codes to your users
 
 You can run this sample server without the mail module
 
@@ -43,7 +67,7 @@ Leave the mail configurations blank if you do not want to send emails
 config.mail.host = ''
 ```
 
-The activation and reset tokens will be outputted to the server console (not recommended for Production)
+If you wish to use the mail functionality and do not have an existing mail server, you can create one for free: https://support.google.com/a/answer/176600?hl=en
 
 #### Testing your mail server
 
@@ -64,6 +88,43 @@ npm start
 Go to
 ```
 http://localhost:8080/
+```
+
+
+## Running on AWS Lambda
+
+In the config file set:
+
+```
+config.aws.lambda = true;
+```
+
+Zip up the following files
+
+```
+zip -r htss.zip node_modules index.js config.js
+```
+
+Upload the htss.zip to your AWS Lambda function
+
+
+## Testing on AWS Lambda
+
+Set the Lambda test event to
+
+```
+{
+  "path": "/"
+}
+```
+
+You should see a 200 response and no errors
+
+To test your email set the Lambda test event to
+```
+{
+  "path": "/test-email?email=your.email@example.com"
+}
 ```
 
 ## Built With
