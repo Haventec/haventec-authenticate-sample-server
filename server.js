@@ -1,7 +1,7 @@
 'use strict';
 
 const Hapi = require('hapi');
-const server = new Hapi.Server();
+let server = null;
 const nodemailer = require('nodemailer');
 const http = require('superagent');
 require('superagent-proxy')(http);
@@ -38,21 +38,20 @@ let transporter = nodemailer.createTransport({
  ******************************/
 
  if ( config.server.host ) {
-    server.connection({ host: config.server.host, port: config.server.port, routes: { cors: true }  });
+    server = new Hapi.Server({ host: config.server.host, port: config.server.port, routes: { cors: true }  });
  } else {
-    server.connection({ port: config.server.port, routes: { cors: true }  });
+    server = new Hapi.Server({ port: config.server.port, routes: { cors: true }  });
  }
 
-server.register(require('inert'), (err) => {
-    if (err) {
-        throw err;
-    }
+const start = async () => {
+
+    await server.register(require('inert'));
 
     server.route({
         method: 'GET',
         path: '/',
         handler: function (request, reply) {
-            reply.file('index.html');
+            return reply.file('index.html');
         }
     });
 
@@ -60,15 +59,15 @@ server.register(require('inert'), (err) => {
         method: 'GET',
         path: '/openid/sjcl.js',
         handler: function (request, reply) {
-            reply.file('openid/sjcl.js');
+            return reply.file('openid/sjcl.js');
         }
     });
 
     server.route({
         method: 'GET',
         path: '/openid/login.html',
-        handler: function (request, reply) {
-            reply.file('openid/login.html');
+        handler: function (request, h) {
+            return h.file('openid/login.html');
         }
     });
 
@@ -76,7 +75,7 @@ server.register(require('inert'), (err) => {
         method: 'GET',
         path: '/openid/addDevice.html',
         handler: function (request, reply) {
-            reply.file('openid/addDevice.html');
+            return reply.file('openid/addDevice.html');
         }
     });
 
@@ -84,7 +83,7 @@ server.register(require('inert'), (err) => {
         method: 'GET',
         path: '/openid/activateDevice.html',
         handler: function (request, reply) {
-            reply.file('openid/activateDevice.html');
+            return reply.file('openid/activateDevice.html');
         }
     });
 
@@ -94,8 +93,8 @@ server.register(require('inert'), (err) => {
         path: '/activate/user',
         handler: function (request, reply) {
             console.info('Called POST /activate/user');
-            callHaventecServer('/authenticate/v1-2/authentication/activate/user', 'POST', request.payload, function (result) {
-                reply(result);
+            return callHaventecServer('/authenticate/v1-2/authentication/activate/user', 'POST', request.payload, function (result) {
+                return result;
             }, reply);
         }
     });
@@ -106,8 +105,8 @@ server.register(require('inert'), (err) => {
         path: '/activate/device',
         handler: function (request, reply) {
             console.info('Called POST /activate/device');
-            callHaventecServer('/authenticate/v1-2/authentication/activate/device', 'POST', request.payload, function (result) {
-                reply(result);
+            return callHaventecServer('/authenticate/v1-2/authentication/activate/device', 'POST', request.payload, function (result) {
+                return result;
             }, reply);
         }
     });
@@ -118,8 +117,8 @@ server.register(require('inert'), (err) => {
         path: '/login',
         handler: function (request, reply) {
             console.info('Called POST /login');
-            callHaventecServer('/authenticate/v1-2/authentication/login', 'POST', request.payload, function (result) {
-                reply(result);
+            return callHaventecServer('/authenticate/v1-2/authentication/login', 'POST', request.payload, function (result) {
+                return result;
             }, reply);
         }
     });
@@ -130,8 +129,8 @@ server.register(require('inert'), (err) => {
         path: '/logout',
         handler: function (request, reply) {
             console.info('Called DELETE /logout');
-            callHaventecServer('/authenticate/v1-2/authentication/logout', 'DELETE', request.payload, function (result) {
-                reply(result);
+            return callHaventecServer('/authenticate/v1-2/authentication/logout', 'DELETE', request.payload, function (result) {
+                return result;
             }, reply);
         }
     });
@@ -142,8 +141,8 @@ server.register(require('inert'), (err) => {
         path: '/reset-pin',
         handler: function (request, reply) {
             console.info('Called POST /reset-pin');
-            callHaventecServer('/authenticate/v1-2/authentication/reset-pin', 'POST', request.payload, function (result) {
-                reply(result);
+            return callHaventecServer('/authenticate/v1-2/authentication/reset-pin', 'POST', request.payload, function (result) {
+                return result;
             }, reply);
         }
     });
@@ -154,8 +153,8 @@ server.register(require('inert'), (err) => {
         path: '/user/current',
         handler: function (request, reply) {
             console.info('Called Get /user/current');
-            callHaventecServer('/authenticate/v1-2/user/current', 'GET', '', function (result) {
-                reply(result);
+            return callHaventecServer('/authenticate/v1-2/user/current', 'GET', '', function (result) {
+                return result;
             }, reply, request);
         }
     });
@@ -166,8 +165,8 @@ server.register(require('inert'), (err) => {
         path: '/user/{userUuid}/device',
         handler: function (request, reply) {
             console.info('\nCalled Get /user/{userUuid}/device');
-            callHaventecServer('/authenticate/v1-2/user/' + request.params.userUuid + '/device', 'GET', '', function (result) {
-                reply(result);
+            return callHaventecServer('/authenticate/v1-2/user/' + request.params.userUuid + '/device', 'GET', '', function (result) {
+                return result;
             }, reply, request);
         }
     });
@@ -179,7 +178,7 @@ server.register(require('inert'), (err) => {
         handler: function (request, reply) {
             console.info('Called POST /self-service/device with request: '+request);
 
-            callHaventecServer('/authenticate/v1-2/self-service/device', 'POST', request.payload, function (result) {
+            return callHaventecServer('/authenticate/v1-2/self-service/device', 'POST', request.payload, function (result) {
                 if (result.activationToken !== undefined && result.userEmail !== undefined) {
                     console.info('Device Activation Token', result.activationToken);
                     sendEmail(result.userEmail, 'My App - New Device Request', 'Device Activation code: ' + result.activationToken);
@@ -188,7 +187,7 @@ server.register(require('inert'), (err) => {
                     // result.activationToken = '';
                 }
 
-                reply(result);
+                return result;
             }, reply);
         }
     });
@@ -199,8 +198,8 @@ server.register(require('inert'), (err) => {
         path: '/device/{deviceUuid}',
         handler: function (request, reply) {
             console.info('\nCalled DELETE /device/{deviceUuid}');
-            callHaventecServer('/authenticate/v1-2/device/' + request.params.deviceUuid, 'DELETE', '', function (result) {
-                reply(result);
+            return callHaventecServer('/authenticate/v1-2/device/' + request.params.deviceUuid, 'DELETE', '', function (result) {
+                return result;
             }, reply, request);
         }
     });
@@ -211,8 +210,8 @@ server.register(require('inert'), (err) => {
         path: '/device/{deviceUuid}',
         handler: function (request, reply) {
             console.info('\nCalled PATCH /device/{deviceUuid}');
-            callHaventecServer('/authenticate/v1-2/device/' + request.params.deviceUuid, 'PATCH', request.payload, function (result) {
-                reply(result);
+            return callHaventecServer('/authenticate/v1-2/device/' + request.params.deviceUuid, 'PATCH', request.payload, function (result) {
+                return result;
             }, reply, request);
         }
     });
@@ -224,7 +223,7 @@ server.register(require('inert'), (err) => {
         handler: function (request, reply) {
             console.info('Called POST /forgot-pin');
 
-            callHaventecServer('/authenticate/v1-2/authentication/forgot-pin', 'POST', request.payload, function (result) {
+            return callHaventecServer('/authenticate/v1-2/authentication/forgot-pin', 'POST', request.payload, function (result) {
                 if (result.resetPinToken !== undefined && result.userEmail !== undefined) {
                     console.info('Reset Token', result.resetPinToken);
                     sendEmail(result.userEmail, 'My App - Reset PIN', 'Reset PIN code: ' + result.resetPinToken);
@@ -233,7 +232,7 @@ server.register(require('inert'), (err) => {
                     // result.resetPinToken = '';
                 }
 
-                reply(result);
+                return result;
             }, reply);
         }
     });
@@ -244,8 +243,8 @@ server.register(require('inert'), (err) => {
         path: '/self-service/user',
         handler: function (request, reply) {
             console.info('Called POST /self-service/user');
-            callHaventecServer('/authenticate/v1-2/self-service/user', 'POST', request.payload, function (result) {
-                reply(result);
+            return callHaventecServer('/authenticate/v1-2/self-service/user', 'POST', request.payload, function (result) {
+                return result;
             }, reply);
         }
     });
@@ -267,143 +266,146 @@ server.register(require('inert'), (err) => {
                 sendEmail(params.email, 'My App - Test email', 'Test email was successful');
                 result = 'Email sent to ' + params.email + '. Please check your inbox';
             }
-            reply(result);
+            return result;
         }
     });
 
-let openidAuthRequestParams = undefined;
+    let openidAuthRequestParams = undefined;
 
-// OpenID Authorization URL endpoint
-server.route({
-    method: 'GET',
-    path: '/openid/auth',
-    handler: function (request, reply) {
-        console.info('Called GET /openid/auth');
+    // OpenID Authorization URL endpoint
+    server.route({
+        method: 'GET',
+        path: '/openid/auth',
+        handler:  (request, h) => {
+            console.info('Called GET /openid/auth');
 
-        let params = request.query;
-        let result = 'Test failed: no email or invalid email address was supplied';
-        //    response_type=code
-        // &scope=openid%20profile%20email
-        // &client_id=s6BhdRkqt3
-        // &client_secret=blahblahblah123
-        // &state=af0ifjsldkj
-        // &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb
-        let response_type = params.response_type;
-        let scope = params.scope;
-        let client_id = params.client_id;
-        let client_secret = params.client_secret;
-        let state = params.state;
-        let redirect_uri = params.redirect_uri;
+            let params = request.query;
+            let result = 'Test failed: no email or invalid email address was supplied';
+            //    response_type=code
+            // &scope=openid%20profile%20email
+            // &client_id=s6BhdRkqt3
+            // &client_secret=blahblahblah123
+            // &state=af0ifjsldkj
+            // &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb
+            let response_type = params.response_type;
+            let scope = params.scope;
+            let client_id = params.client_id;
+            let client_secret = params.client_secret;
+            let state = params.state;
+            let redirect_uri = params.redirect_uri;
 
-        openidAuthRequestParams = params;
+            openidAuthRequestParams = params;
 
-        // let queryString = 'response_type=' + response_type + '&scope=' + scpope + '&client_id=' + client_id
-        // + '&client_secret=' + client_secret + '&state=' + state + '&redirect_uri=' + redirect_uri;
-        //
-        // callHaventecServer('/authenticate/v1-2/openid/auth?' + queryString, 'GET', function (result) {
-        //     // reply(result);
-        //     reply.file('login.html');
-        // });
+            // let queryString = 'response_type=' + response_type + '&scope=' + scpope + '&client_id=' + client_id
+            // + '&client_secret=' + client_secret + '&state=' + state + '&redirect_uri=' + redirect_uri;
+            //
+            // return callHaventecServer('/authenticate/v1-2/openid/auth?' + queryString, 'GET', function (result) {
+            //     // return result;
+            //     return reply.file('login.html');
+            // });
 
-        console.log("request.query=" + JSON.stringify(request.query));
-        console.log("client_id=" + JSON.stringify(openidAuthRequestParams.client_id));
-        reply.redirect('login.html?applicationUuid=' + client_id + '&state=' + state + '&redirect_uri=' + redirect_uri);
-    }
-});
-
-// Logs the user in and returns a new set of authentication keys and JWT
-server.route({
-    method: 'POST',
-    path: '/openid/login',
-    handler: function (request, reply) {
-        console.info('Called POST /login');
-        callHaventecServer('/authenticate/v1-2/authentication/login', 'POST', request.payload, function (result) {
-            reply(result);
-        }, reply);
-    }
-});
-
-
-
-// OpenID Authorization URL return - After auth, redirects back to the redirect_uri specified in the request
-server.route({
-    method: 'GET',
-    path: '/openid/authcomplete',
-    handler: function (request, reply) {
-        console.info('Called GET /openid/authcomplete');
-
-        let params = request.query;
-        let result = 'Test failed: no email or invalid email address was supplied';
-        //    response_type=code
-        // &scope=openid%20profile%20email
-        // &client_id=s6BhdRkqt3
-        // &client_secret=blahblahblah123
-        // &state=af0ifjsldkj
-        // &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb
-
-        let code = params.code;
-        let state = params.state;
-        // let response_type = openidAuthRequestParams ? openidAuthRequestParams.response_type : '';
-        // let scope = openidAuthRequestParams.scope;
-        // let client_id = openidAuthRequestParams.client_id;
-        // let client_secret = openidAuthRequestParams.client_secret;
-        let redirect_uri = params.redirect_uri;
-
-        // let queryString = 'response_type=' + response_type + '&scope=' + scpope + '&client_id=' + client_id
-        // + '&client_secret=' + client_secret + '&state=' + state + '&redirect_uri=' + redirect_uri;
-        //
-        // callHaventecServer('/authenticate/v1-2/openid/auth?' + queryString, 'GET', function (result) {
-        //     // reply(result);
-        //     reply.file('login.html');
-        // });
-
-        console.info('Called GET /openid/authcomplete, code=' + code);
-        console.info('Called GET /openid/authcomplete, state=' + state);
-        console.info('Called GET /openid/authcomplete, redirect_uri=' + redirect_uri);
-
-        reply.redirect(redirect_uri + "?code=" + code + "&state="+ state);
-
-        // callHaventecServer('/authenticate/v1-2/openid/authcomplete?code=' + code + '&state=' + state + '&redirect_uri=' + redirect_uri, 'GET', '', function (result) {
-        //     console.log("Called GET /openid/authcomplete, result = " + JSON.stringify(result))
-        //
-        //     reply(result);
-        // });
-    }
-});
-
-// OpenID Token URL endpoint
-server.route({
-    method: 'POST',
-    path: '/openid/token',
-    handler: function (request, reply) {
-        console.info('Called POST /openid/token');
-
-        // grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
-        // &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb
-
-        var payload = request.payload;
-        // payload.applicationUuid = "786fb3c4-d12f-45ee-8bfd-efa99100fe76";
-
-        console.log("Called POST /openid/token, payload = " + JSON.stringify(payload));
-
-        callHaventecServer('/authenticate/v1-2/openid/token', 'POST', payload, function (result) {
-            console.log("Called POST /openid/token, result = " + JSON.stringify(result))
-
-            reply(result);
-        }, reply);
-    }
-});
-
-server.start(function (err) {
-        console.log('Haventec Authenticate sample server started at: ' + server.info.uri);
-        console.log('This server is NOT intended to be used in a Production environment.');
-
-        if ( err ) {
-            console.log(err);
+            console.log("request.query=" + JSON.stringify(request.query));
+            console.log("client_id=" + JSON.stringify(openidAuthRequestParams.client_id));
+            return h.redirect('login.html?applicationUuid=' + client_id + '&state=' + state + '&redirect_uri=' + redirect_uri);
         }
     });
 
-});
+    // Logs the user in and returns a new set of authentication keys and JWT
+    server.route({
+        method: 'POST',
+        path: '/openid/login',
+        handler: function (request, reply) {
+            console.info('Called POST /login');
+            return callHaventecServer('/authenticate/v1-2/authentication/login', 'POST', request.payload, function (result) {
+                return result;
+            }, reply);
+        }
+    });
+
+
+
+    // OpenID Authorization URL return - After auth, redirects back to the redirect_uri specified in the request
+    server.route({
+        method: 'GET',
+        path: '/openid/authcomplete',
+        handler: function (request, reply) {
+            console.info('Called GET /openid/authcomplete');
+
+            let params = request.query;
+            let result = 'Test failed: no email or invalid email address was supplied';
+            //    response_type=code
+            // &scope=openid%20profile%20email
+            // &client_id=s6BhdRkqt3
+            // &client_secret=blahblahblah123
+            // &state=af0ifjsldkj
+            // &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb
+
+            let code = params.code;
+            let state = params.state;
+            // let response_type = openidAuthRequestParams ? openidAuthRequestParams.response_type : '';
+            // let scope = openidAuthRequestParams.scope;
+            // let client_id = openidAuthRequestParams.client_id;
+            // let client_secret = openidAuthRequestParams.client_secret;
+            let redirect_uri = params.redirect_uri;
+
+            // let queryString = 'response_type=' + response_type + '&scope=' + scpope + '&client_id=' + client_id
+            // + '&client_secret=' + client_secret + '&state=' + state + '&redirect_uri=' + redirect_uri;
+            //
+            // return callHaventecServer('/authenticate/v1-2/openid/auth?' + queryString, 'GET', function (result) {
+            //     // return result;
+            //     return reply.file('login.html');
+            // });
+
+            console.info('Called GET /openid/authcomplete, code=' + code);
+            console.info('Called GET /openid/authcomplete, state=' + state);
+            console.info('Called GET /openid/authcomplete, redirect_uri=' + redirect_uri);
+
+            reply.redirect(redirect_uri + "?code=" + code + "&state="+ state);
+
+            // return callHaventecServer('/authenticate/v1-2/openid/authcomplete?code=' + code + '&state=' + state + '&redirect_uri=' + redirect_uri, 'GET', '', function (result) {
+            //     console.log("Called GET /openid/authcomplete, result = " + JSON.stringify(result))
+            //
+            //     return result;
+            // });
+        }
+    });
+
+    // OpenID Token URL endpoint
+    server.route({
+        method: 'POST',
+        path: '/openid/token',
+        handler: function (request, reply) {
+            console.info('Called POST /openid/token');
+
+            // grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
+            // &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb
+
+            var payload = request.payload;
+            // payload.applicationUuid = "786fb3c4-d12f-45ee-8bfd-efa99100fe76";
+
+            console.log("Called POST /openid/token, payload = " + JSON.stringify(payload));
+
+            return callHaventecServer('/authenticate/v1-2/openid/token', 'POST', payload, function (result) {
+                console.log("Called POST /openid/token, result = " + JSON.stringify(result))
+
+                return result;
+            }, reply);
+        }
+    });
+
+    try {
+        await server.start();
+    }
+    catch (err) {
+        console.log(err);
+        process.exit(1);
+    }
+
+    console.log('Haventec Authenticate sample server started at: ' + server.info.uri);
+    console.log('This server is NOT intended to be used in a Production environment.');
+};
+
+start();
 
 function sendEmail(email, subject, body){
     let mailOptions = {
@@ -460,7 +462,7 @@ function callHaventecServer(path, method, payload, callback, reply, request) {
                 (res) => {callback(res.body)},
         (err) => {
             console.log("ERROR:", err.message);
-            reply({responseStatus: {status: "ERROR", message: err.message, code: ""}});
+            return reply({responseStatus: {status: "ERROR", message: err.message, code: ""}});
         }
     );
     } else {
@@ -471,7 +473,7 @@ function callHaventecServer(path, method, payload, callback, reply, request) {
                 (res) => {callback(res.body)},
         (err) => {
             console.log("ERROR:", err.message);
-            reply({responseStatus: {status: "ERROR", message: err.message, code: ""}});
+            return ({responseStatus: {status: "ERROR", message: err.message, code: ""}});
         }
     );
     }
