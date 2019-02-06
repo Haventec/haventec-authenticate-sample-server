@@ -44,16 +44,20 @@ if(config.aws && config.aws.lambda){
     server = new Hapi.Server({ port: config.server.port, routes: { cors: true }  });
 }
 
+const start = async () => {
+
+    await server.register(require('inert'));
+
     server.route({
         method: 'GET',
         path: '/',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('\nCalled GET /');
 
             if(config.aws.lambda){
-                reply('Haventec Authenticate Sample Server is running');
+                return reply('Haventec Authenticate Sample Server is running');
             } else {
-                reply.file('index.html');
+                return reply.file('index.html');
             }
         }
     });
@@ -62,10 +66,10 @@ if(config.aws && config.aws.lambda){
     server.route({
         method: 'POST',
         path: '/activate/user',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('\nCalled POST /activate/user');
-            callHaventecServer('/authenticate/v1-2/authentication/activate/user', 'POST', request.payload, function (result) {
-                reply(result);
+            return callHaventecServer('/authenticate/v1-2/authentication/activate/user', 'POST', request.payload, function (result) {
+                return result;
             }, reply);
         }
     });
@@ -74,10 +78,10 @@ if(config.aws && config.aws.lambda){
     server.route({
         method: 'POST',
         path: '/activate/device',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('\nCalled POST /activate/device');
-            callHaventecServer('/authenticate/v1-2/authentication/activate/device', 'POST', request.payload, function (result) {
-                reply(result);
+            return callHaventecServer('/authenticate/v1-2/authentication/activate/device', 'POST', request.payload, function (result) {
+                return result;
             }, reply);
         }
     });
@@ -86,10 +90,10 @@ if(config.aws && config.aws.lambda){
     server.route({
         method: 'POST',
         path: '/login',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('\nCalled POST /login');
-            callHaventecServer('/authenticate/v1-2/authentication/login', 'POST', request.payload, function (result) {
-                reply(result);
+            return callHaventecServer('/authenticate/v1-2/authentication/login', 'POST', request.payload, function (result) {
+                return result;
             }, reply);
         }
     });
@@ -98,10 +102,10 @@ if(config.aws && config.aws.lambda){
     server.route({
         method: 'DELETE',
         path: '/logout',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('\nCalled DELETE /logout');
-            callHaventecServer('/authenticate/v1-2/authentication/logout', 'DELETE', '', function (result) {
-                reply(result);
+            return callHaventecServer('/authenticate/v1-2/authentication/logout', 'DELETE', '', function (result) {
+                return result;
             }, reply, request);
         }
     });
@@ -110,10 +114,10 @@ if(config.aws && config.aws.lambda){
     server.route({
         method: 'POST',
         path: '/reset-pin',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('\nCalled POST /reset-pin');
-            callHaventecServer('/authenticate/v1-2/authentication/reset-pin', 'POST', request.payload, function (result) {
-                reply(result);
+            return callHaventecServer('/authenticate/v1-2/authentication/reset-pin', 'POST', request.payload, function (result) {
+                return result;
             }, reply);
         }
     });
@@ -122,10 +126,10 @@ if(config.aws && config.aws.lambda){
     server.route({
         method: 'GET',
         path: '/user/current',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('\nCalled Get /user/current');
-            callHaventecServer('/authenticate/v1-2/user/current', 'GET', '', function (result) {
-                reply(result);
+            return callHaventecServer('/authenticate/v1-2/user/current', 'GET', '', function (result) {
+                return result;
             }, reply, request);
         }
     });
@@ -134,10 +138,10 @@ if(config.aws && config.aws.lambda){
     server.route({
         method: 'GET',
         path: '/user/{userUuid}/device',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('\nCalled Get /user/{userUuid}/device');
-            callHaventecServer('/authenticate/v1-2/user/' + request.params.userUuid + '/device', 'GET', '', function (result) {
-                reply(result);
+            return callHaventecServer('/authenticate/v1-2/user/' + request.params.userUuid + '/device', 'GET', '', function (result) {
+                return result;
             }, reply, request);
         }
     });
@@ -146,10 +150,10 @@ if(config.aws && config.aws.lambda){
     server.route({
         method: 'POST',
         path: '/device',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('\nCalled POST /self-service/device');
 
-            callHaventecServer('/authenticate/v1-2/self-service/device', 'POST', request.payload, function (result) {
+            return callHaventecServer('/authenticate/v1-2/self-service/device', 'POST', request.payload, function (result) {
                 if (result.activationToken !== undefined && result.userEmail !== undefined) {
                     console.info('Device Activation Token', result.activationToken);
                     sendEmail(result.userEmail, 'My App - New Device Request', 'Device Activation code: ' + result.activationToken);
@@ -158,7 +162,7 @@ if(config.aws && config.aws.lambda){
                     result.activationToken = '';
                 }
 
-                reply(result);
+                return result;
             }, reply);
         }
     });
@@ -167,10 +171,10 @@ if(config.aws && config.aws.lambda){
     server.route({
         method: 'DELETE',
         path: '/device/{deviceUuid}',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('\nCalled DELETE /device/{deviceUuid}');
-            callHaventecServer('/authenticate/v1-2/device/' + request.params.deviceUuid, 'DELETE', '', function (result) {
-                reply(result);
+            return callHaventecServer('/authenticate/v1-2/device/' + request.params.deviceUuid, 'DELETE', '', function (result) {
+                return result;
             }, reply, request);
         }
     });
@@ -179,10 +183,10 @@ if(config.aws && config.aws.lambda){
     server.route({
         method: 'PATCH',
         path: '/device/{deviceUuid}',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('\nCalled PATCH /device/{deviceUuid}');
-            callHaventecServer('/authenticate/v1-2/device/' + request.params.deviceUuid, 'PATCH', request.payload, function (result) {
-                reply(result);
+            return callHaventecServer('/authenticate/v1-2/device/' + request.params.deviceUuid, 'PATCH', request.payload, function (result) {
+                return result;
             }, reply, request);
         }
     });
@@ -191,10 +195,10 @@ if(config.aws && config.aws.lambda){
     server.route({
         method: 'POST',
         path: '/forgot-pin',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('\nCalled POST /forgot-pin');
 
-            callHaventecServer('/authenticate/v1-2/authentication/forgot-pin', 'POST', request.payload, function (result) {
+            return callHaventecServer('/authenticate/v1-2/authentication/forgot-pin', 'POST', request.payload, function (result) {
                 if (result.resetPinToken !== undefined && result.userEmail !== undefined) {
                     console.info('Reset Token', result.resetPinToken);
                     sendEmail(result.userEmail, 'My App - Reset PIN', 'Reset PIN code: ' + result.resetPinToken);
@@ -203,7 +207,7 @@ if(config.aws && config.aws.lambda){
                     result.resetPinToken = '';
                 }
 
-                reply(result);
+                return result;
             }, reply);
         }
     });
@@ -212,10 +216,10 @@ if(config.aws && config.aws.lambda){
     server.route({
         method: 'POST',
         path: '/self-service/user',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('\nCalled POST /self-service/user');
-            callHaventecServer('/authenticate/v1-2/self-service/user', 'POST', request.payload, function (result) {
-                reply(result);
+            return callHaventecServer('/authenticate/v1-2/self-service/user', 'POST', request.payload, function (result) {
+                return result;
             }, reply);
         }
     });
@@ -224,8 +228,8 @@ if(config.aws && config.aws.lambda){
     server.route({
         method: 'GET',
         path: '/test-email',
-        handler: function (request, reply) {
-            console.info('\nCalled POST /test-email');
+        handler: async function (request, reply) {
+            console.info('Called POST /test-email');
 
             let params = request.query;
             let result = 'Test failed: no email or invalid email address was supplied';
@@ -237,7 +241,7 @@ if(config.aws && config.aws.lambda){
                 sendEmail(params.email, 'My App - Test email', 'Test email was successful');
                 result = 'Email sent to ' + params.email + '. Please check your inbox';
             }
-            reply(result);
+            return result;
         }
     });
 
@@ -247,6 +251,12 @@ if(config.aws && config.aws.lambda){
             console.info('This server is NOT intended to be used in a Production environment.');
         });
     }
+
+    console.log('Haventec Authenticate sample server started at: ' + server.info.uri);
+    console.log('This server is NOT intended to be used in a Production environment.');
+};
+
+start();
 
 function sendEmail(email, subject, body){
     let mailOptions = {
@@ -271,23 +281,21 @@ function sendEmail(email, subject, body){
     }
 }
 
-function callHaventecServer(path, method, payload, callback, reply, request) {
+async function callHaventecServer(path, method, payload, callback, reply, request) {
     const authenticateUrl = 'https://' + config.application.haventecServer + path;
 
     console.info('Authenticate URL: ', authenticateUrl );
 
-    http(method, authenticateUrl)
-        .set(setHeaders(request))
-        .send(payload)
-        .then(
-            (res) => {
-                console.info("SUCCESS:\n", res.body);
-                callback(res.body)},
-            (err) => {
-                console.warn("ERROR:", err.message);
-                reply({responseStatus: {status: "ERROR", message: err.message, code: ""}});
-            }
-        );
+    try {
+        const response = await http(method, authenticateUrl)
+            .set(setHeaders(request))
+            .send(payload);
+        console.log(response);
+        return JSON.parse(response.text);
+    } catch ( err ) {
+        console.log("ERROR:", err.message);
+        return ({responseStatus: {status: "ERROR", message: err.message, code: ""}});
+    }
 }
 
 function setHeaders(request) {
