@@ -50,7 +50,7 @@ const start = async () => {
     server.route({
         method: 'GET',
         path: '/',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             return reply.file('index.html');
         }
     });
@@ -58,7 +58,7 @@ const start = async () => {
     server.route({
         method: 'GET',
         path: '/openid/sjcl.js',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             return reply.file('openid/sjcl.js');
         }
     });
@@ -66,7 +66,7 @@ const start = async () => {
     server.route({
         method: 'GET',
         path: '/openid/login.html',
-        handler: function (request, h) {
+        handler: async function (request, h) {
             return h.file('openid/login.html');
         }
     });
@@ -74,7 +74,7 @@ const start = async () => {
     server.route({
         method: 'GET',
         path: '/openid/addDevice.html',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             return reply.file('openid/addDevice.html');
         }
     });
@@ -82,7 +82,7 @@ const start = async () => {
     server.route({
         method: 'GET',
         path: '/openid/activateDevice.html',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             return reply.file('openid/activateDevice.html');
         }
     });
@@ -91,7 +91,7 @@ const start = async () => {
     server.route({
         method: 'POST',
         path: '/activate/user',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('Called POST /activate/user');
             return callHaventecServer('/authenticate/v1-2/authentication/activate/user', 'POST', request.payload, function (result) {
                 return result;
@@ -103,7 +103,7 @@ const start = async () => {
     server.route({
         method: 'POST',
         path: '/activate/device',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('Called POST /activate/device');
             return callHaventecServer('/authenticate/v1-2/authentication/activate/device', 'POST', request.payload, function (result) {
                 return result;
@@ -115,7 +115,7 @@ const start = async () => {
     server.route({
         method: 'POST',
         path: '/login',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('Called POST /login');
             return callHaventecServer('/authenticate/v1-2/authentication/login', 'POST', request.payload, function (result) {
                 return result;
@@ -127,7 +127,7 @@ const start = async () => {
     server.route({
         method: 'DELETE',
         path: '/logout',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('Called DELETE /logout');
             return callHaventecServer('/authenticate/v1-2/authentication/logout', 'DELETE', request.payload, function (result) {
                 return result;
@@ -139,7 +139,7 @@ const start = async () => {
     server.route({
         method: 'POST',
         path: '/reset-pin',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('Called POST /reset-pin');
             return callHaventecServer('/authenticate/v1-2/authentication/reset-pin', 'POST', request.payload, function (result) {
                 return result;
@@ -151,7 +151,7 @@ const start = async () => {
     server.route({
         method: 'GET',
         path: '/user/current',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('Called Get /user/current');
             return callHaventecServer('/authenticate/v1-2/user/current', 'GET', '', function (result) {
                 return result;
@@ -163,7 +163,7 @@ const start = async () => {
     server.route({
         method: 'GET',
         path: '/user/{userUuid}/device',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('\nCalled Get /user/{userUuid}/device');
             return callHaventecServer('/authenticate/v1-2/user/' + request.params.userUuid + '/device', 'GET', '', function (result) {
                 return result;
@@ -175,7 +175,7 @@ const start = async () => {
     server.route({
         method: 'POST',
         path: '/device',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('Called POST /self-service/device with request: '+request);
 
             return callHaventecServer('/authenticate/v1-2/self-service/device', 'POST', request.payload, function (result) {
@@ -196,7 +196,7 @@ const start = async () => {
     server.route({
         method: 'DELETE',
         path: '/device/{deviceUuid}',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('\nCalled DELETE /device/{deviceUuid}');
             return callHaventecServer('/authenticate/v1-2/device/' + request.params.deviceUuid, 'DELETE', '', function (result) {
                 return result;
@@ -208,7 +208,7 @@ const start = async () => {
     server.route({
         method: 'PATCH',
         path: '/device/{deviceUuid}',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('\nCalled PATCH /device/{deviceUuid}');
             return callHaventecServer('/authenticate/v1-2/device/' + request.params.deviceUuid, 'PATCH', request.payload, function (result) {
                 return result;
@@ -220,7 +220,7 @@ const start = async () => {
     server.route({
         method: 'POST',
         path: '/forgot-pin',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('Called POST /forgot-pin');
 
             return callHaventecServer('/authenticate/v1-2/authentication/forgot-pin', 'POST', request.payload, function (result) {
@@ -241,7 +241,7 @@ const start = async () => {
     server.route({
         method: 'POST',
         path: '/self-service/user',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('Called POST /self-service/user');
             return callHaventecServer('/authenticate/v1-2/self-service/user', 'POST', request.payload, function (result) {
                 return result;
@@ -253,7 +253,7 @@ const start = async () => {
     server.route({
         method: 'GET',
         path: '/test-email',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('Called POST /test-email');
 
             let params = request.query;
@@ -314,7 +314,7 @@ const start = async () => {
     server.route({
         method: 'POST',
         path: '/openid/login',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('Called POST /login');
             return callHaventecServer('/authenticate/v1-2/authentication/login', 'POST', request.payload, function (result) {
                 return result;
@@ -360,7 +360,7 @@ const start = async () => {
             console.info('Called GET /openid/authcomplete, state=' + state);
             console.info('Called GET /openid/authcomplete, redirect_uri=' + redirect_uri);
 
-            reply.redirect(redirect_uri + "?code=" + code + "&state="+ state);
+            return reply.redirect(redirect_uri + "?code=" + code + "&state="+ state);
 
             // return callHaventecServer('/authenticate/v1-2/openid/authcomplete?code=' + code + '&state=' + state + '&redirect_uri=' + redirect_uri, 'GET', '', function (result) {
             //     console.log("Called GET /openid/authcomplete, result = " + JSON.stringify(result))
@@ -374,7 +374,7 @@ const start = async () => {
     server.route({
         method: 'POST',
         path: '/openid/token',
-        handler: function (request, reply) {
+        handler: async function (request, reply) {
             console.info('Called POST /openid/token');
 
             // grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
@@ -430,7 +430,7 @@ function sendEmail(email, subject, body){
     }
 }
 
-function callHaventecServer(path, method, payload, callback, reply, request) {
+async function callHaventecServer(path, method, payload, callback, reply, request) {
     let haventecServer = config.application.haventecServer;
     let applicationUuid = 'not set';
     let apiKey = config.application.apiKey;
@@ -453,30 +453,32 @@ function callHaventecServer(path, method, payload, callback, reply, request) {
 
     console.log('callHaventecServer: ' + path + ' ' + method + " with "  + JSON.stringify(payload));
 
+    let response = null;
     if ( env === 'production' ) {
-        http(method, authenticateUrl)
-            .send(payload)
-            .set(setHeaders(request, apiKey))
-            .proxy(proxy)
-            .then(
-                (res) => {callback(res.body)},
-        (err) => {
-            console.log("ERROR:", err.message);
-            return reply({responseStatus: {status: "ERROR", message: err.message, code: ""}});
-        }
-    );
-    } else {
-        http(method, authenticateUrl)
-            .send(payload)
-            .set(setHeaders(request, apiKey))
-            .then(
-                (res) => {callback(res.body)},
-        (err) => {
+        try {
+            response = await http(method, authenticateUrl)
+                .send(payload)
+                .set(setHeaders(request, apiKey))
+                .proxy(proxy);
+        } catch ( err ) {
             console.log("ERROR:", err.message);
             return ({responseStatus: {status: "ERROR", message: err.message, code: ""}});
         }
-    );
+    } else {
+        try {
+            response = await http(method, authenticateUrl)
+                .send(payload)
+                .set(setHeaders(request, apiKey));
+        } catch ( err ) {
+            console.log("ERROR:", err.message);
+            return ({responseStatus: {status: "ERROR", message: err.message, code: ""}});
+        }
     }
+
+    console.log('returning response');
+    console.log(response.text);
+
+    return JSON.parse(response.text);
 }
 
 function setHeaders(request, apiKey) {
