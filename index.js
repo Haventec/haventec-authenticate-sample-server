@@ -44,11 +44,6 @@ if(config.aws && config.aws.lambda){
     server = new Hapi.Server({ port: config.server.port, routes: { cors: true }  });
 }
 
-server.register(require('inert'), (err) => {
-    if (err) {
-        throw err;
-    }
-
     server.route({
         method: 'GET',
         path: '/',
@@ -246,13 +241,12 @@ server.register(require('inert'), (err) => {
         }
     });
 
-    if(!config.aws.lambda){
+    if(!config.aws || !config.aws.lambda){
         server.start(function (err) {
             console.info('Haventec Authenticate sample server started at: ' + server.info.uri);
             console.info('This server is NOT intended to be used in a Production environment.');
         });
     }
-});
 
 function sendEmail(email, subject, body){
     let mailOptions = {
