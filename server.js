@@ -12,8 +12,7 @@ const _ = require('lodash');
 var proxy = process.env.http_proxy || 'http://proxy.aws.haventec.com:8080';
 
 let globalHeaders = {
-    'Content-Type': 'application/json',
-    'x-api-key': config.application.apiKey
+    'Content-Type': 'application/json'
 };
 
 /******************************
