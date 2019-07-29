@@ -26,7 +26,7 @@ Create a config file (rename the template file)
 
 Linux / Mac:
 ```
-mv config.js.template config.js
+cp config.js.template config.js
 ```
 
 Windows: 
