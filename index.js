@@ -23,6 +23,7 @@ let transporter = nodemailer.createTransport({
     host: config.mail.host,
     port: config.mail.port,
     secure: config.mail.secure,
+    ignoreTLS: config.mail.ignoreTLS,
     auth: {
         user: config.mail.username,
         pass: config.mail.password
@@ -219,6 +220,12 @@ const start = async () => {
         handler: async function (request, reply) {
             console.info('\nCalled POST /self-service/user');
             return callHaventecServer('/authenticate/v1-2/self-service/user', 'POST', request.payload, function (result) {
+                if (result.activationToken !== undefined && request.payload.email !== undefined) {
+                    console.info('User Activation Token', result.activationToken);
+                    sendEmail(request.payload.email, 'My App - New User Request', 'User Activation code: ' + result.activationToken);
+                    // We do not want to send the email or activationToken back to the client;
+                    result.activationToken = '';
+                }
                 return result;
             }, reply);
         }
@@ -291,7 +298,11 @@ async function callHaventecServer(path, method, payload, callback, reply, reques
             .set(setHeaders(request))
             .send(payload);
         console.log(response);
-        return JSON.parse(response.text);
+
+        const result = JSON.parse(response.text);
+        callback(result);
+
+        return result;
     } catch ( err ) {
         console.log("ERROR:", err.message);
         return ({responseStatus: {status: "ERROR", message: err.message, code: ""}});
