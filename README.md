@@ -36,7 +36,7 @@ rem config.js.template config.js
 
 
 Edit the file config.js to add the API Key of your application. 
-Your API key is available in <a href="https://console-demo.haventec.com/" target="_blank">Haventec Console</a>
+Your API key is available in [Haventec Console](https://console-demo.haventec.com/)
  
 Linux / Mac:
 ```
