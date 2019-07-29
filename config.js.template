@@ -81,6 +81,9 @@ config.mail.port = 0;
 // Value - boolean - example: true
 config.mail.secure = false;
 
+// Value - boolean - example: true
+config.mail.ignoreTLS = true;
+
 // Value - string - example: 'username@example.com'
 config.mail.username = '';
 
