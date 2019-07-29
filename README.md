@@ -22,11 +22,11 @@ npm install
 
 ### Configure the server
 
-Create a config file (rename the template file)
+Create the config file 'config.js' based on 'config.js.template'
 
 Linux / Mac:
 ```
-mv config.js.template config.js
+cp config.js.template config.js
 ```
 
 Windows: 
@@ -35,8 +35,9 @@ rem config.js.template config.js
 ```
 
 
-Edit the config.js file
-
+Edit the file config.js to add the API Key of your application. 
+Your API key is available in [Haventec Console](https://console-demo.haventec.com/)
+ 
 Linux / Mac:
 ```
 vi config.js
@@ -47,9 +48,7 @@ Windows:
 config.js
 ```
 
-Add your API key
-
-Your API key is available in [Cloud Portal](https://cloudportal.haventec.com) account under Applications 
+This is the API Key parameter at the 'config.js':
 ``` 
 config.application.apiKey = 'xxxx-xxxx-xxxx-xxxx-xxxx';
 ```

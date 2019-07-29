@@ -26,7 +26,7 @@ config.application.apiKey = '';
 
 // The Haventec Authenticate Server domain.
 // Change this value if you are using your own Haventec Authenticate server
-config.application.haventecServer = 'api.haventec.com';
+config.application.haventecServer = 'api-demo.haventec.com';
 
 
 /************************************************************
