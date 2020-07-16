@@ -12,7 +12,7 @@
     "email-validator": "^2.0.4",
     "hapi": "^18.1.0",
     "inert": "^5.1.2",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "nodemailer": "^5.1.1",
     "superagent": "^4.1.0"
   }
